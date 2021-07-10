@@ -11,6 +11,7 @@ metadata {
   ) {
     capability 'Switch'
     capability 'Switch Level'
+    capability 'Actuator'
     attribute 'poolId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'level', 'number'
@@ -35,7 +36,7 @@ def parse(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Filter parse')
 	parent.logDebug(statusXmlNode)
 
-  def filterSpeed = statusXmlNode?.@filterSpeed?.text()
+  def filterSpeed = statusXmlNode?.@filterSpeed?.text().toInteger()
   updateState(filterSpeed)
 }
 
@@ -64,8 +65,8 @@ def setLevel(level) {
 
 def setPumpSpeed(speed) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId') ?: 1],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId') ?: 1],
+    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: speed],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],
