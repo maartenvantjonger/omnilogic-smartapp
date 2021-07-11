@@ -11,19 +11,18 @@ metadata {
   ) {
     capability 'Switch'
     capability 'Actuator'
-    //capability "Fan Speed"
-		capability "Fan Control"
-		capability "Health Check"
-		capability "Actuator"
-		capability "Refresh"
-		capability "Sensor"
-    capability "Configuration"
+    capability 'Fan Speed'
+		capability 'Health Check'
+		capability 'Actuator'
+		capability 'Refresh'
+		capability 'Sensor'
+    capability 'Configuration'
 
-		command "low"
-		command "medium"
-		command "high"
-		command "raiseFanSpeed"
-		command "lowerFanSpeed"
+		command 'low'
+		command 'medium'
+		command 'high'
+		command 'raiseFanSpeed'
+		command 'lowerFanSpeed'
     attribute 'poolId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'fanSpeed', 'number'
