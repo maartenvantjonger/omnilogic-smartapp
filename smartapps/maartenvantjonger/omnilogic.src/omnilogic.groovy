@@ -272,7 +272,7 @@ def updateDeviceStatuses() {
       def deviceId = getDeviceId(deviceStatus.@systemId?.text())
       def childDevice = getChildDevice(deviceId)
       if (childDevice != null) {
-        childDevice.parse(deviceStatus)
+        childDevice.parseStatus(deviceStatus)
       }
     }
   }

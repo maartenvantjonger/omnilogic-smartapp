@@ -63,8 +63,8 @@ metadata {
   }
 }
 
-def parse(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Heater parse')
+def parseStatus(statusXmlNode) {
+	parent.logDebug('Executing Omnilogic Heater parseStatus')
 	parent.logDebug(statusXmlNode)
 
   def enabled = statusXmlNode.@enable.text() == 'yes'

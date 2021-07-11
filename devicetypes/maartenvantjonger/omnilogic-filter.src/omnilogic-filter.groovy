@@ -42,8 +42,8 @@ metadata {
   }
 }
 
-def parse(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Filter parse')
+def parseStatus(statusXmlNode) {
+	parent.logDebug('Executing Omnilogic Filter parseStatus')
 	parent.logDebug(statusXmlNode)
 
   def filterSpeed = statusXmlNode?.@filterSpeed?.text().toInteger()

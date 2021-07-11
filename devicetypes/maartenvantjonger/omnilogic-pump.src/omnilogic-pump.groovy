@@ -25,8 +25,8 @@ metadata {
   }
 }
 
-def parse(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Pump parse')
+def parseStatus(statusXmlNode) {
+	parent.logDebug('Executing Omnilogic Pump parseStatus')
 	parent.logDebug(statusXmlNode)
 
   def pumpState = statusXmlNode?.@pumpState?.text().toInteger()

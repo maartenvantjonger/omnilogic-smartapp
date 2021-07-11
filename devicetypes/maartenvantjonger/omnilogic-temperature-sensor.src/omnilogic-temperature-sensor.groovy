@@ -30,8 +30,8 @@ metadata {
   }
 }
 
-def parse(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Temperature Sensor parse')
+def parseStatus(statusXmlNode) {
+	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
 	parent.logDebug(statusXmlNode)
 
   def temperature = statusXmlNode?.@waterTemp?.text() ?: statusXmlNode?.@airTemp?.text()

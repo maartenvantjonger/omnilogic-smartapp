@@ -31,8 +31,8 @@ metadata {
   }
 }
 
-def parse(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Chlorinator parse')
+def parseStatus(statusXmlNode) {
+	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
 	parent.logDebug(statusXmlNode)
 
   // TODO fix
