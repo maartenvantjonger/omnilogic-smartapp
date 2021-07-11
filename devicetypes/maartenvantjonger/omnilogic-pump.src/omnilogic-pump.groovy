@@ -10,7 +10,7 @@ metadata {
     author: 'Maarten van Tjonger'
   ) {
     capability 'Switch'
-    attribute 'poolId', 'number'
+    attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }
 

@@ -18,7 +18,7 @@ metadata {
     capability "Thermostat Heating Setpoint"
     capability "Thermostat Operating State"
     capability "Thermostat Mode"
-    attribute 'poolId', 'number'
+    attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'coolingSetpoint', 'number'
     attribute 'heatingSetpoint', 'number'
@@ -88,11 +88,11 @@ def setThermostatMode(thermostatmode) {
 
 }
 
-def setHeatingSetpoint(temperature) {
+def setHeatingSetpoint(temperatbowIdure) {
   parent.logDebug('Executing Omnilogic Heater setHeatingSetpoint')
 
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId') ?: 1],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId') ?: 1],
     [name: 'HeaterID', dataType: 'int', value: device.omnilogicId],
     [name: 'Version', value: 0],
     [name: 'Temp', dataType: 'int', value: temperature]

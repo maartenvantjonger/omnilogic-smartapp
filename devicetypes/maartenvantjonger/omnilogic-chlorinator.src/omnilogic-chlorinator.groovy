@@ -11,7 +11,7 @@ metadata {
   ) {
     capability 'Switch'
     capability 'Switch Level'
-    attribute 'poolId', 'number'
+    attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'level', 'number'
   }

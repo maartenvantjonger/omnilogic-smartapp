@@ -22,7 +22,7 @@ metadata {
     command 'high'
     command 'raiseFanSpeed'
     command 'lowerFanSpeed'
-    attribute 'poolId', 'number'
+    attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'fanSpeed', 'number'
   }
