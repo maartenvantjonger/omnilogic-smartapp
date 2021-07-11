@@ -1,7 +1,7 @@
 /**
  *  Omnilogic Pump
  *
- *  Copyright 2020 Maarten van Tjonger
+ *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
@@ -29,8 +29,8 @@ def parse(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Pump parse')
 	parent.logDebug(statusXmlNode)
 
-  def pumpState = statusXmlNode?.@pumpState?.text()
-  updateState(pumpState == '1')
+  def pumpState = statusXmlNode?.@pumpState?.text().toInteger()
+  updateState(pumpState == 1)
 }
 
 def updateState(on) {
@@ -50,8 +50,8 @@ def off() {
 
 def setPumpState(isOn) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId') ?: 1],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: isOn ? 100 : 0],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],

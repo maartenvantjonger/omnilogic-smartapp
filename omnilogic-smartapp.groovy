@@ -1,7 +1,7 @@
 /**
  *  Omnilogic Smartapp
  *
- *  Copyright 2020 Maarten van Tjonger
+ *  Copyright 2021 Maarten van Tjonger
  */
 definition(
   name: 'Omnilogic',
@@ -19,6 +19,7 @@ preferences {
   page(name: 'loginPage', title: 'Omnilogic account')
   page(name: 'loginResultPage', title: 'Omnilogic account')
   page(name: 'devicesPage', title: 'Omnilogic devices')
+  page(name: 'telemetryPage', title: 'Omnilogic telemetry')
 }
 
 def installed() {
@@ -42,8 +43,7 @@ def updated() {
 def initialize() {
   logDebug('Executing initialize')
 
-  // TODO Remove getTelemetryData call
-  runEvery15Minutes(getTelemetryData)
+  runEvery15Minutes(updateDeviceStatuses)
 }
 
 def logDebug(message) {
@@ -66,11 +66,9 @@ def mainPage() {
 
   dynamicPage(name: 'mainPage') {
     section {
-      href 'loginPage', title: '', description: 'Account settings'
-    }
-
-    section {
-      href 'devicesPage', title: '', description: 'Devices'
+      href 'loginPage', title: 'Account', description: 'Change account settings'
+      href 'devicesPage', title: 'Devices', description: 'Choose pool equipment devices'
+      href 'telemetryPage', title: 'Telemetry', description: 'View system status'
     }
 
     section('Logging') {
@@ -108,37 +106,45 @@ def loginResultPage() {
 }
 
 def devicesPage() {
-  // TODO Remove getTelemetryData call
-  getTelemetryData()
-
-  // TODO call GetMspConfigFile to get devices
-  //getMspConfigFile()
-
+  // Get currently installed child devices
   settings.devicesToUse = childDevices.collect { it.deviceNetworkId }
-  def availableDevices = state.availableDevices.collectEntries { [it.key, it.value.name] }
 
+  // Get available devices from Omnilogic
+  getAvailableDevices()
+  def availableDeviceNames = state.availableDevices.collectEntries { [it.key, it.value.name] }
+
+  // TODO Add/remove devices on next page?
   return dynamicPage(name: 'devicesPage') {
-    if (availableDevices?.size() > 0) {
+    if (availableDeviceNames?.size() > 0) {
       section {
-        input(name: 'devicesToUse', type: 'enum', title: 'Select devices to use', required: false, multiple: true, options: availableDevices)
+        input(
+          name: 'devicesToUse',
+          type: 'enum',
+          title: 'Select devices to use',
+          required: false,
+          multiple: true,
+          options: availableDeviceNames
+        )
       }
     } else {
       section {
         paragraph 'No devices found'
       }
     }
+  }
+}
 
-    section('Telemetry') {
+def telemetryPage() {
+  updateDeviceStatuses()
+
+  return dynamicPage(name: 'telemetryPage') {
+    section {
       paragraph state.telemetryData ?: 'No data'
-    }
-
-    section('MSP Config') {
-      paragraph state.mspConfigFile ?: 'No data'
     }
   }
 }
 
-def getTelemetryData() {
+def getTelemetryData(callback) {
   def parameters = [
     [name: 'Version', value: 0]
   ]
@@ -148,26 +154,16 @@ def getTelemetryData() {
       return
     }
 
-    def serializedResponse = groovy.xml.XmlUtil.serialize(response)
-    state.telemetryData = groovy.xml.XmlUtil.escapeXml(serializedResponse)
+    def serializedTelemetryData = groovy.xml.XmlUtil.serialize(response)
+    state.telemetryData = groovy.xml.XmlUtil.escapeXml(serializedTelemetryData)
 
-    state.availableDevices = [:]
-
-    response.children().each { deviceStatus ->
-      // Add to available devices list
-      def omnilogicId = deviceStatus.@systemId?.text()
-      addAvailableDevice(omnilogicId, deviceStatus.name())
-
-      // Update device status
-      def childDevice = getChildDevice("omnilogic-${omnilogicId}")
-      if (childDevice != null) {
-        childDevice.parse(deviceStatus)
-      }
+    if (callback != null) {
+      callback(response)
     }
   }
 }
 
-def getMspConfigFile() {
+def getAvailableDevices() {
   def parameters = [
     [name: 'Version', value: 0]
   ]
@@ -177,61 +173,72 @@ def getMspConfigFile() {
       return
     }
 
-    def serializedResponse = groovy.xml.XmlUtil.serialize(response.Response)
+    def availableDevices = [:]
+
+    def serializedResponse = groovy.xml.XmlUtil.serialize(response.MSPConfig)
     state.mspConfigFile = groovy.xml.XmlUtil.escapeXml(serializedResponse)
+
+
+    // Parse available devices from MSP Config
+    response.MSPConfig.Backyard.Sensor.each {
+      addAvailableBackyardDevice(availableDevices, it.parent(), 'Air Temperature Sensor', 'Omnilogic Temperature Sensor')
+    }
+
+    // TODO Add relays/lights
+    def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
+    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Temperature Sensor', 'Omnilogic Temperature Sensor') }
+    bowNodes.Filter.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Filter') }
+    bowNodes.Pump.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Pump') }
+    bowNodes.Chlorinator.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
+    bowNodes.Heater.each { addAvailableBowDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
+
+    state.availableDevices = availableDevices
   }
 }
 
-def addAvailableDevice(omnilogicId, name) {
-  switch (name) {
-    case 'Backyard':
-      addDevice(omnilogicId, "Omnilogic Air Temperature ${omnilogicId}", 'Omnilogic Temperature Sensor')
-      break
-    case 'BodyOfWater':
-      addDevice(omnilogicId, "Omnilogic Water Temperature ${omnilogicId}", 'Omnilogic Temperature Sensor')
-      break
-    case 'Pump':
-      addDevice(omnilogicId, "Omnilogic Pump ${omnilogicId}", 'Omnilogic Pump')
-      break
-    case 'Heater':
-      addDevice(omnilogicId, "Omnilogic Heater ${omnilogicId}", 'Omnilogic Heater')
-      break
-    case 'VirtualHeater':
-      addDevice(omnilogicId, "Omnilogic Virtual Heater ${omnilogicId}", 'Omnilogic Heater')
-      break
-    case 'Chlorinator':
-      addDevice(omnilogicId, "Omnilogic Chlorinator ${omnilogicId}", 'Omnilogic Chlorinator')
-      break
-    case 'Filter':
-      addDevice(omnilogicId, "Omnilogic Filter ${omnilogicId}", 'Omnilogic Filter')
-      break
-    default:
-      break
+def addAvailableBackyardDevice(availableDevices, deviceXmlNode, name, driverName) {
+  def omnilogicId = deviceXmlNode.'System-Id'.text()
+  if (omnilogicId == '0') {
+    omnilogicId = settings.mspId
   }
-}
 
-def addDevice(omnilogicId, name, driverName) {
-  def deviceId = "omnilogic-${omnilogicId}"
+  def deviceId = getDeviceId(omnilogicId)
 
-  state.availableDevices[deviceId] = [
+  availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: name,
+    bowId: omnilogicId,
+    name: "Omnilogic ${deviceXmlNode.Name.text()} ${name}",
     driverName: driverName
   ]
 }
 
-def createDevice(omnilogicId, name, driverName) {
+def addAvailableBowDevice(availableDevices, deviceXmlNode, name, driverName) {
+  def omnilogicId = deviceXmlNode.'System-Id'.text()
+  def deviceId = getDeviceId(omnilogicId)
+
+  availableDevices[deviceId] = [
+    omnilogicId: omnilogicId,
+    bowId: deviceXmlNode.parent().'System-Id'.text(),
+    name: "Omnilogic ${deviceXmlNode.parent().Name.text()} ${name ?: deviceXmlNode.Name.text()}",
+    driverName: driverName
+  ]
+}
+
+def getDeviceId(omnilogicId) {
+  return "omnilogic-${omnilogicId}"
+}
+
+def createDevice(omnilogicId, bowId, name, driverName) {
   logDebug("Executing createDevice for ${name}")
 
-  def deviceId = "omnilogic-${omnilogicId}"
+  def deviceId = getDeviceId(omnilogicId)
   def childDevice = getChildDevice(deviceId)
 
   if (childDevice == null) {
     def attributes = [name: name, completedSetup: true]
     childDevice = addChildDevice('maartenvantjonger', driverName, deviceId, null, attributes)
     childDevice.sendEvent(name: 'omnilogicId', value: omnilogicId)
-    childDevice.sendEvent(name: 'poolId', value: 1)
-    // TODO send Pool ID
+    childDevice.sendEvent(name: 'bowId', value: bowId)
   }
 
   return childDevice
@@ -250,11 +257,25 @@ def updateDevices() {
   // Create devices that were selected
   settings.devicesToUse?.findAll { getChildDevice(it) == null }
     .each { deviceId ->
-      def availableDevice = state.availableDevices[deviceId]
-      if (availableDevice != null) {
-        createDevice(availableDevice.omnilogicId, availableDevice.name, availableDevice.driverName)
+      def device = state.availableDevices[deviceId]
+      if (device != null) {
+        createDevice(device.omnilogicId, device.bowId, device.name, device.driverName)
       }
     }
+}
+
+def updateDeviceStatuses() {
+  logDebug('Executing updateDeviceStatuses')
+
+  getTelemetryData { telemetryData ->
+    telemetryData.children().each { deviceStatus ->
+      def deviceId = getDeviceId(deviceStatus.@systemId?.text())
+      def childDevice = getChildDevice(deviceId)
+      if (childDevice != null) {
+        childDevice.parse(deviceStatus)
+      }
+    }
+  }
 }
 
 def deleteDevicesExcept(deviceIds) {
@@ -264,7 +285,7 @@ def deleteDevicesExcept(deviceIds) {
     .findAll { deviceIds == null || !deviceIds.contains(it.deviceNetworkId) }
     .each {
       try {
-        deleteChildDevice(it.deviceNetworkId, true)
+        deleteChildDevice(it.deviceNetworkId)
         logDebug("Deleted device ${it.deviceNetworkId}")
       } catch (e) {
         logDebug("Error deleting device ${it.deviceNetworkId}: ${e}")

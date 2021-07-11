@@ -1,7 +1,7 @@
 /**
  *  Omnilogic Filter
  *
- *  Copyright 2020 Maarten van Tjonger
+ *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition(
@@ -10,11 +10,23 @@ metadata {
     author: 'Maarten van Tjonger'
   ) {
     capability 'Switch'
-    capability 'Switch Level'
     capability 'Actuator'
+    //capability "Fan Speed"
+		capability "Fan Control"
+		capability "Health Check"
+		capability "Actuator"
+		capability "Refresh"
+		capability "Sensor"
+    capability "Configuration"
+
+		command "low"
+		command "medium"
+		command "high"
+		command "raiseFanSpeed"
+		command "lowerFanSpeed"
     attribute 'poolId', 'number'
     attribute 'omnilogicId', 'number'
-    attribute 'level', 'number'
+    attribute 'fanSpeed', 'number'
   }
 
   tiles {
@@ -23,12 +35,12 @@ metadata {
       state('on', label: '${name}', action: 'off')
     }
 
-    controlTile('level', 'device.level', 'slider', range: '(1..100)', height: 2, width: 2, canChangeIcon: true, decoration: 'flat', inactiveLabel: false) {
-      state 'level', action: 'setLevel'
+    controlTile('fanSpeed', 'device.fanSpeed', 'slider', range: '(1..100)', height: 2, width: 2, canChangeIcon: true, decoration: 'flat', inactiveLabel: false) {
+      state 'fanSpeed', action: 'setFanSpeed'
     }
 
     main('switch')
-    details(['switch', 'level'])
+    details(['switch', 'fanSpeed'])
   }
 }
 
@@ -45,27 +57,78 @@ def updateState(speed) {
 
   def onOff = speed == 0 ? 'off' : 'on'
   sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-  sendEvent(name: 'level', value: speed, displayed: true)
+  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 }
 
 def on() {
   parent.logDebug('Executing Omnilogic Filter on')
-  setLevel(100)
+  setPumpSpeed(100)
 }
 
 def off() {
 	parent.logDebug('Executing Omnilogic Filter off')
-  setLevel(0)
+  setPumpSpeed(0)
 }
 
-def setLevel(level) {
-  parent.logDebug('Executing Omnilogic Filter setLevel')
-  setPumpSpeed(level)
+def high() {
+  setPumpSpeed(100)
+}
+
+def medium() {
+  setPumpSpeed(85)
+}
+
+def low() {
+  setPumpSpeed(75)
+}
+
+def raiseFanSpeed() {
+  setPumpSpeed(100)
+}
+
+def lowerFanSpeed() {
+  setPumpSpeed(75)
+}
+
+def setSpeed(speed) {
+  parent.logDebug("Executing Omnilogic Filter setSpeed ${speed}")
+
+  switch (speed) {
+    case 'low':
+      setPumpSpeed(75)
+      break
+    case 'medium-low':
+      setPumpSpeed(80)
+      break
+    case 'medium':
+      setPumpSpeed(85)
+      break
+    case 'medium-high':
+      setPumpSpeed(90)
+      break
+    case 'high':
+      setPumpSpeed(100)
+      break
+    case 'on':
+      setPumpSpeed(100)
+      break
+    case 'off':
+      setPumpSpeed(0)
+      break
+    case 'auto':
+      setPumpSpeed(100)
+      break
+  }
+}
+
+def setFanSpeed(speed) {
+  parent.logDebug('Executing Omnilogic Filter fanSpeed')
+  setPumpSpeed(speed * 25)
 }
 
 def setPumpSpeed(speed) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId') ?: 1],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: speed],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],

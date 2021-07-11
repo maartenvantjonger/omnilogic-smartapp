@@ -1,7 +1,7 @@
 /**
  *  Omnilogic Chlorinator
  *
- *  Copyright 2020 Maarten van Tjonger
+ *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
@@ -66,7 +66,7 @@ def setLevel(level) {
 // TODO fix
 def setChlorinatorLevel(level) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('poolId')],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: level],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
