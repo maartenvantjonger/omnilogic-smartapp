@@ -9,6 +9,7 @@ metadata {
     namespace: 'maartenvantjonger',
     author: 'Maarten van Tjonger'
   ) {
+    capability 'Refresh'
     capability 'Sensor'
     capability 'Temperature Measurement'
     attribute 'omnilogicId', 'string'
@@ -28,6 +29,17 @@ metadata {
     main('lastTemperature')
     details(['lastTemperature', 'temperature'])
   }
+}
+
+def initialize(omnilogicId, bowId) {
+	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
+  sendEvent(name: 'omnilogicId', value: omnilogicId)
+  sendEvent(name: 'bowId', value: bowId)
+}
+
+def refresh() {
+	parent.logDebug('Executing Omnilogic Temperature Sensor refresh')
+  parent.updateDeviceStatuses()
 }
 
 def parseStatus(statusXmlNode) {

@@ -11,6 +11,8 @@ metadata {
   ) {
     capability 'Switch'
     capability 'Switch Level'
+    capability 'Actuator'
+    capability 'Refresh'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'level', 'number'
@@ -31,21 +33,37 @@ metadata {
   }
 }
 
+def initialize(omnilogicId, bowId) {
+	parent.logDebug('Executing Omnilogic Chlorinator initialize')
+  sendEvent(name: 'omnilogicId', value: omnilogicId)
+  sendEvent(name: 'bowId', value: bowId)
+}
+
+def refresh() {
+	parent.logDebug('Executing Omnilogic Chlorinator refresh')
+  parent.updateDeviceStatuses()
+}
+
 def parseStatus(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
 	parent.logDebug(statusXmlNode)
 
-  // TODO fix
-  //def filterSpeed = statusXmlNode?.@filterSpeed?.text()
-  //updateState(filterSpeed)
+  def enabled = statusXmlNode.@status.text() != "0"
+  def level = statusXmlNode['@Timed-Percent'].text().toInteger()
+  updateState(enabled, level)
 }
 
-def updateState(level) {
+def updateState(enabled, level) {
 	parent.logDebug('Executing updateState')
 
-  def onOff = level == 0 ? 'off' : 'on'
-  sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-  sendEvent(name: 'level', value: level, displayed: true)
+  if (enabled != null) {
+    def onOff = enabled ? 'on' : 'off'
+    sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+  }
+
+  if (level != null) {
+    sendEvent(name: 'level', value: level, displayed: true)
+  }
 }
 
 def on() {
@@ -63,11 +81,10 @@ def setLevel(level) {
   setChlorinatorLevel(level)
 }
 
-// TODO fix
-def setChlorinatorLevel(level) {
+def enableChlorinator(level) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: level],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],
@@ -79,8 +96,31 @@ def setChlorinatorLevel(level) {
   ]
 
   parent.performApiRequest('SetCHLOREnable', parameters) { response ->
-    if (response) {
-      updateState(level)
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
+      updateState(enable, level)
+    }
+  }
+}
+
+def enableSuperChlorinator(enable) {
+  def parameters = [
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'IsOn', dataType: 'int', value: enable ? 100 : 0],
+    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
+    [name: 'StartTimeHours', dataType: 'int', value: 0],
+    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
+    [name: 'EndTimeHours', dataType: 'int', value: 0],
+    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
+    [name: 'DaysActive', dataType: 'int', value: 0],
+    [name: 'Recurring', dataType: 'bool', value: false]
+  ]
+
+  parent.performApiRequest('SetUISuperCHLORCmd', parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
+      updateState(enable, 100)
     }
   }
 }

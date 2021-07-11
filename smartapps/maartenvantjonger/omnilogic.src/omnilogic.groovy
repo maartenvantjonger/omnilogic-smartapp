@@ -237,8 +237,7 @@ def createDevice(omnilogicId, bowId, name, driverName) {
   if (childDevice == null) {
     def attributes = [name: name, completedSetup: true]
     childDevice = addChildDevice('maartenvantjonger', driverName, deviceId, null, attributes)
-    childDevice.sendEvent(name: 'omnilogicId', value: omnilogicId)
-    childDevice.sendEvent(name: 'bowId', value: bowId)
+    childDevice.initialize(omnilogicId, bowId)
   }
 
   return childDevice

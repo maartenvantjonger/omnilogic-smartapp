@@ -10,21 +10,13 @@ metadata {
     author: 'Maarten van Tjonger'
   ) {
     capability 'Switch'
+    capability 'Switch Level'
     capability 'Actuator'
-    capability 'Fan Speed'
-    capability 'Health Check'
     capability 'Refresh'
-    capability 'Sensor'
-    capability 'Configuration'
-
-    command 'low'
-    command 'medium'
-    command 'high'
-    command 'raiseFanSpeed'
-    command 'lowerFanSpeed'
+    capability 'Fan Speed' // Smartthings
+    // capability 'Fan Control' // Hubitat
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
-    attribute 'fanSpeed', 'number'
   }
 
   tiles {
@@ -40,6 +32,17 @@ metadata {
     main('switch')
     details(['switch', 'fanSpeed'])
   }
+}
+
+def initialize(omnilogicId, bowId) {
+	parent.logDebug('Executing Omnilogic Filter initialize')
+  sendEvent(name: 'omnilogicId', value: omnilogicId)
+  sendEvent(name: 'bowId', value: bowId)
+}
+
+def refresh() {
+	parent.logDebug('Executing Omnilogic Filter refresh')
+  parent.updateDeviceStatuses()
 }
 
 def parseStatus(statusXmlNode) {
@@ -86,6 +89,11 @@ def raiseFanSpeed() {
 
 def lowerFanSpeed() {
   setPumpSpeed(75)
+}
+
+def setLevel(level) {
+  parent.logDebug("Executing Omnilogic Filter setLevel ${level}")
+  setPumpSpeed(level)
 }
 
 def setSpeed(speed) {
@@ -139,7 +147,8 @@ def setPumpSpeed(speed) {
   ]
 
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
-    if (response) {
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
       updateState(speed)
     }
   }

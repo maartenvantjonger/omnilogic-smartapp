@@ -10,6 +10,8 @@ metadata {
     author: 'Maarten van Tjonger'
   ) {
     capability 'Switch'
+    capability 'Actuator'
+    capability 'Refresh'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }
@@ -23,6 +25,17 @@ metadata {
     main('switch')
     details(['switch'])
   }
+}
+
+def initialize(omnilogicId, bowId) {
+	parent.logDebug('Executing Omnilogic Pump initialize')
+  sendEvent(name: 'omnilogicId', value: omnilogicId)
+  sendEvent(name: 'bowId', value: bowId)
+}
+
+def refresh() {
+	parent.logDebug('Executing Omnilogic Pump refresh')
+  parent.updateDeviceStatuses()
 }
 
 def parseStatus(statusXmlNode) {
@@ -63,7 +76,8 @@ def setPumpState(isOn) {
   ]
 
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
-    if (response) {
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
       updateState(isOn)
     }
   }

@@ -14,22 +14,11 @@ metadata {
     capability "Sensor"
     capability "Temperature Measurement"
     capability "Thermostat"
-    capability "Thermostat Cooling Setpoint"
     capability "Thermostat Heating Setpoint"
     capability "Thermostat Operating State"
     capability "Thermostat Mode"
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
-    attribute 'coolingSetpoint', 'number'
-    attribute 'heatingSetpoint', 'number'
-    attribute 'hysteresis', 'number'
-    attribute 'supportedThermostatFanModes', "enum", ["low", "high"]
-    attribute 'supportedThermostatModes', "enum", ["off", "heat"]
-    attribute 'temperature', 'number'
-    attribute 'thermostatFanMode', 'string'
-    attribute 'thermostatMode', 'string'
-    attribute 'thermostatOperatingState', 'string'
-    attribute 'thermostatSetpoint', 'number'
   }
 
   tiles {
@@ -63,6 +52,18 @@ metadata {
   }
 }
 
+def initialize(omnilogicId, bowId) {
+	parent.logDebug('Executing Omnilogic Heater initialize')
+  sendEvent(name: 'omnilogicId', value: omnilogicId)
+  sendEvent(name: 'bowId', value: bowId)
+  sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
+}
+
+def refresh() {
+	parent.logDebug('Executing Omnilogic Heater refresh')
+  parent.updateDeviceStatuses()
+}
+
 def parseStatus(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Heater parseStatus')
 	parent.logDebug(statusXmlNode)
@@ -72,38 +73,24 @@ def parseStatus(statusXmlNode) {
   updateState(enabled, heatingSetpoint)
 }
 
-
 def updateState(enabled, heatingSetpoint) {
   parent.logDebug("Executing Omnilogic Heater updateState enabled: ${enabled} heatingSetpoint: ${heatingSetpoint}")
 
-  sendEvent(name: 'switch', value: enabled ? 'on' : 'off', displayed: true, isStateChange: true)
-  sendEvent(name: 'heatingSetpoint', value: heatingSetpoint, displayed: true)
-  sendEvent(name: 'thermostatSetpoint', value: heatingSetpoint, displayed: true)
-  sendEvent(name: 'thermostatMode', value: enabled ? 'heat' : 'off', displayed: true, isStateChange: true)
-  sendEvent(name: 'thermostatOperatingState', value: enabled ? 'heating' : 'idle', displayed: true, isStateChange: true)
-}
-
-def setThermostatMode(thermostatmode) {
-  parent.logDebug('Executing Omnilogic Heater setThermostatMode')
-
-}
-
-def setHeatingSetpoint(temperatbowIdure) {
-  parent.logDebug('Executing Omnilogic Heater setHeatingSetpoint')
-
-  def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId') ?: 1],
-    [name: 'HeaterID', dataType: 'int', value: device.omnilogicId],
-    [name: 'Version', value: 0],
-    [name: 'Temp', dataType: 'int', value: temperature]
-  ]
-
-  parent.performApiRequest('SetUIHeaterCmd', parameters) { response ->
-    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
-    if (success) {
-      sendEvent(name: 'heatingSetpoint', value: temperature, displayed: true)
-    }
+  if (enabled != null) {
+    sendEvent(name: 'switch', value: enabled ? 'on' : 'off', displayed: true, isStateChange: true)
+    sendEvent(name: 'thermostatMode', value: enabled ? 'heat' : 'off', displayed: true, isStateChange: true)
+    sendEvent(name: 'thermostatOperatingState', value: enabled ? 'heating' : 'idle', displayed: true, isStateChange: true)
   }
+
+  if (heatingSetpoint != null) {
+    sendEvent(name: 'heatingSetpoint', value: heatingSetpoint, displayed: true)
+    sendEvent(name: 'thermostatSetpoint', value: heatingSetpoint, displayed: true)
+  }
+}
+
+def setThermostatMode(thermostatMode) {
+  parent.logDebug("Executing Omnilogic Heater setThermostatMode ${thermostatMode}")
+  enableHeater(thermostatMode == 'heat')
 }
 
 def heat() {
@@ -119,15 +106,33 @@ def off() {
 def enableHeater(enable) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'HeaterID', dataType: 'int', value: device.omnilogicId],
+    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'Version', dataType: 'string', value: 0],
     [name: 'Enabled', dataType: 'bool', value: enable]
+  ]
+
+  parent.performApiRequest('SetHeaterEnable', parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
+      updateState(enable, null)
+    }
+  }
+}
+
+def setHeatingSetpoint(temperature) {
+  parent.logDebug("Executing Omnilogic Heater setHeatingSetpoint ${temperature}")
+
+  def parameters = [
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'Version', value: 0],
+    [name: 'Temp', dataType: 'int', value: temperature]
   ]
 
   parent.performApiRequest('SetUIHeaterCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+      updateState(null, temperature)
     }
   }
 }
