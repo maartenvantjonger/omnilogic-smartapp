@@ -271,6 +271,8 @@ def updateDevices() {
         createDevice(device.omnilogicId, device.bowId, device.name, device.driverName)
       }
     }
+
+  updateDeviceStatuses()
 }
 
 def updateDeviceStatuses() {
