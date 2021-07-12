@@ -46,13 +46,12 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Heater initialize')
 
-  settings.omnilogicId = omnilogicId
-  settings.bowId = attributes['bowId']
-
+  sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
+  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, displayed: true)
-  sendEvent(name: 'unit', value: 'F')
+  sendEvent(name: 'unit', value: 'F', displayed: true)
   sendEvent(name: 'constraints', value: [min: 65, max: 104], displayed: true)
 
   // TODO implement
@@ -105,8 +104,8 @@ def off() {
 
 def enableHeater(enable) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: settings.bowId],
-    [name: 'HeaterID', dataType: 'int', value: settings.omnilogicId],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'Version', dataType: 'string', value: 0],
     [name: 'Enabled', dataType: 'bool', value: enable]
   ]
@@ -123,8 +122,8 @@ def setHeatingSetpoint(temperature) {
   parent.logDebug("Executing Omnilogic Heater setHeatingSetpoint ${temperature}")
 
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: settings.bowId],
-    [name: 'HeaterID', dataType: 'int', value: settings.omnilogicId],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'Version', value: 0],
     [name: 'Temp', dataType: 'int', value: temperature]
   ]

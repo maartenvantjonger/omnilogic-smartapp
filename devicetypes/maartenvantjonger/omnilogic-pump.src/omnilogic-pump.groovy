@@ -29,9 +29,9 @@ metadata {
 
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Pump initialize')
-  
-  settings.omnilogicId = omnilogicId
-  settings.bowId = attributes['bowId']
+
+  sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
+  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
 }
 
 def refresh() {
@@ -64,8 +64,8 @@ def off() {
 
 def setPumpState(isOn) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: settings.bowId],
-    [name: 'EquipmentID', dataType: 'int', value: settings.omnilogicId],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: isOn ? 100 : 0],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],

@@ -36,9 +36,8 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Chlorinator initialize')
 
-  settings.omnilogicId = omnilogicId
-  settings.bowId = attributes['bowId']
-
+  sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
+  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'level', value: 0, displayed: true)
 }
 
@@ -86,8 +85,8 @@ def setLevel(level) {
 
 def enableChlorinator(level) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: settings.bowId],
-    [name: 'ChlorID', dataType: 'int', value: settings.omnilogicId],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: level],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],
@@ -108,8 +107,8 @@ def enableChlorinator(level) {
 
 def enableSuperChlorinator(enable) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: settings.bowId],
-    [name: 'ChlorID', dataType: 'int', value: settings.omnilogicId],
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
     [name: 'IsOn', dataType: 'int', value: enable ? 100 : 0],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],

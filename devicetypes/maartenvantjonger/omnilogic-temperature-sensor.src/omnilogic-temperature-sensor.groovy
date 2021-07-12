@@ -38,10 +38,9 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
 
-  settings.omnilogicId = omnilogicId
-  settings.bowId = attributes['bowId']
-  settings.sensorType = attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air'
-
+  sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
+  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
+  sendEvent(name: 'sensorType', attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air', displayed: true)
   sendEvent(name: 'unit', value: attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C')
 }
 
@@ -54,7 +53,7 @@ def parseStatus(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
 	parent.logDebug(statusXmlNode)
 
-  def temperature = settings.sensorType == 'water' ?
+  def temperature = device.currentValue('sensorType') == 'water' ?
     statusXmlNode?.@waterTemp?.text() : statusXmlNode?.@airTemp?.text()
   updateState(temperature.toInteger())
 }
