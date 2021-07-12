@@ -139,11 +139,11 @@ def devicePage() {
 }
 
 def deviceResultPage() {
-  updateDevices()
+  def updated = updateDevices()
 
   return dynamicPage(name: 'deviceResultPage', nextPage: 'mainPage') {
     section {
-      paragraph 'Updated devices'
+      paragraph updated ? 'Updated devices' : 'Failed to create devices. Make sure all Device Handlers are installed'
     }
   }
 }
@@ -273,15 +273,22 @@ def updateDevices() {
   deleteDevicesExcept(settings.devicesToUse)
 
   // Create devices that were selected
-  settings.devicesToUse?.findAll { getChildDevice(it) == null }
-    .each { deviceId ->
-      def device = state.availableDevices[deviceId]
-      if (device != null) {
+  def devicesToCreate = settings.devicesToUse?.findAll { getChildDevice(it) == null && state.availableDevices[it] != null }
+  if (devicesToCreate?.size() > 0) {
+    try {
+      devicesToCreate.each { deviceId ->
+        def device = state.availableDevices[deviceId]
         createDevice(device.omnilogicId, device.name, device.driverName, device.attributes)
       }
-    }
 
-  updateDeviceStatuses()
+      updateDeviceStatuses()
+    } catch (e) {
+      logDebug("Error updating devices: ${e}")
+      return false
+    }
+  }
+
+  return true
 }
 
 def updateDeviceStatuses() {
