@@ -133,8 +133,22 @@ def setSpeed(speed) {
 }
 
 def setFanSpeed(speed) {
-  parent.logDebug('Executing Omnilogic Filter fanSpeed')
-  setPumpSpeed(speed * 25)
+  parent.logDebug("Executing Omnilogic Filter setFanSpeed ${speed}")
+
+  switch (speed) {
+    case 0:
+      setPumpSpeed(0)
+      break
+    case 1:
+      setPumpSpeed(75)
+      break
+    case 2:
+      setPumpSpeed(90)
+      break
+    case 3:
+      setPumpSpeed(100)
+      break
+  }
 }
 
 def setPumpSpeed(speed) {
