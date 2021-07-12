@@ -29,6 +29,11 @@ metadata {
     main('lastTemperature')
     details(['lastTemperature', 'temperature'])
   }
+
+  preferences {
+    input(name: 'unit', type: 'enum', title: 'enum', options: ['F': 'Fahrenheit', 'C': 'Celcius'], required: true, defaultValue: 'F')
+    input(name: 'useLastTemperature', type: 'bool', title: 'Show last recorded actual temperature. Ignore -1 temperature updates.', defaultValue: true)
+  }
 }
 
 def initialize(omnilogicId, bowId) {
@@ -51,12 +56,14 @@ def parseStatus(statusXmlNode) {
 }
 
 def updateState(temperature) {
-  	parent.logDebug("Executing Omnilogic Temperature Sensor updateState temperature ${temperature}")
-  sendEvent(name: 'temperature', value: temperature, unit: 'F', displayed: true)
+  parent.logDebug("Executing Omnilogic Temperature Sensor updateState temperature ${temperature}")
 
   if (temperature > -1) {
-    sendEvent(name: 'lastTemperature', value: temperature, unit: 'F', displayed: true)
+    sendEvent(name: 'temperature', value: temperature, unit: settings.unit, displayed: true)
+    sendEvent(name: 'lastTemperature', value: temperature, unit: settings.unit, displayed: true)
     sendEvent(name: 'lastTemperatureDate', value:  new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
+  } else if (!useLastTemperature) {
+    sendEvent(name: 'temperature', value: temperature, unit: settings.unit, displayed: true)
   }
 }
 
