@@ -40,6 +40,8 @@ def initialize(omnilogicId, bowId) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
   sendEvent(name: 'omnilogicId', value: omnilogicId)
   sendEvent(name: 'bowId', value: bowId)
+
+  settings.unit = 'F'
 }
 
 def refresh() {
