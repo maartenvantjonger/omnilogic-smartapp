@@ -144,8 +144,8 @@ def setFanSpeed(speed) {
 
 def setPumpSpeed(speed) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'PoolID', dataType: 'int', value: settings.bowId],
+    [name: 'EquipmentID', dataType: 'int', value: settings.omnilogicId],
     [name: 'IsOn', dataType: 'int', value: speed],
     [name: 'IsCountDownTimer', dataType: 'bool', value: false],
     [name: 'StartTimeHours', dataType: 'int', value: 0],

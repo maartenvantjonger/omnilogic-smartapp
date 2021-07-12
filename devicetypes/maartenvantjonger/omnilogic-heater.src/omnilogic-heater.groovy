@@ -105,8 +105,8 @@ def off() {
 
 def enableHeater(enable) {
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'PoolID', dataType: 'int', value: settings.bowId],
+    [name: 'HeaterID', dataType: 'int', value: settings.omnilogicId],
     [name: 'Version', dataType: 'string', value: 0],
     [name: 'Enabled', dataType: 'bool', value: enable]
   ]
@@ -123,8 +123,8 @@ def setHeatingSetpoint(temperature) {
   parent.logDebug("Executing Omnilogic Heater setHeatingSetpoint ${temperature}")
 
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'PoolID', dataType: 'int', value: settings.bowId],
+    [name: 'HeaterID', dataType: 'int', value: settings.omnilogicId],
     [name: 'Version', value: 0],
     [name: 'Temp', dataType: 'int', value: temperature]
   ]
