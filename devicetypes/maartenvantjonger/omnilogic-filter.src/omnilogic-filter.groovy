@@ -13,8 +13,13 @@ metadata {
     capability 'Switch Level'
     capability 'Actuator'
     capability 'Refresh'
-    capability 'Fan Speed' // Smartthings
-    // capability 'Fan Control' // Hubitat
+
+    if (parent.getPlatform == 'Hubitat') {
+      capability 'Fan Control'
+    } else {
+      capability 'Fan Speed'
+    }
+
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }

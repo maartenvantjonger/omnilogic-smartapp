@@ -18,7 +18,8 @@ preferences {
   page(name: 'mainPage', title: 'Omnilogic settings', install: true, uninstall: true)
   page(name: 'loginPage', title: 'Omnilogic account')
   page(name: 'loginResultPage', title: 'Omnilogic account')
-  page(name: 'devicesPage', title: 'Omnilogic devices')
+  page(name: 'devicePage', title: 'Omnilogic devices')
+  page(name: 'deviceResultPage', title: 'Omnilogic devices')
   page(name: 'telemetryPage', title: 'Omnilogic telemetry')
 }
 
@@ -35,7 +36,6 @@ def uninstalled() {
 def updated() {
   logDebug('Executing updated')
 
-  updateDevices()
   unsubscribe()
   initialize()
 }
@@ -43,7 +43,8 @@ def updated() {
 def initialize() {
   logDebug('Executing initialize')
 
-  runEvery15Minutes(updateDeviceStatuses)
+  // TODO Decide to keep or not
+  // runEvery15Minutes(updateDeviceStatuses)
 }
 
 def logDebug(message) {
@@ -51,7 +52,11 @@ def logDebug(message) {
     return
   }
 
-  log.debug(groovy.xml.XmlUtil.escapeXml(message))
+  if (getPlatform() == 'Hubitat') {
+    message = groovy.xml.XmlUtil.escapeXml(message)
+  }
+
+  log.debug(message)
 }
 
 def logDebug(groovy.util.slurpersupport.GPathResult xmlNode) {
@@ -67,7 +72,7 @@ def mainPage() {
   dynamicPage(name: 'mainPage') {
     section {
       href 'loginPage', title: 'Account', description: 'Change account settings'
-      href 'devicesPage', title: 'Devices', description: 'Choose pool equipment devices'
+      href 'devicePage', title: 'Devices', description: 'Choose pool equipment devices'
       href 'telemetryPage', title: 'Telemetry', description: 'View system status'
     }
 
@@ -79,10 +84,10 @@ def mainPage() {
 
 def loginPage() {
   return dynamicPage(name: 'loginPage', nextPage: 'loginResultPage') {
-    section {
+    section('Enter your Omnilogic account credentials') {
       input('username', 'email', title: 'Username', description: '')
       input('password', 'password', title: 'Password', description: '')
-      input('mspId', 'text', title: 'MSP ID', description: '')
+      input('mspId', 'text', title: 'MSP System ID', description: 'The MSP (Main System Processor) System ID of your Omnilogic pool controller')
     }
   }
 }
@@ -105,7 +110,7 @@ def loginResultPage() {
   }
 }
 
-def devicesPage() {
+def devicePage() {
   // Get currently installed child devices
   settings.devicesToUse = childDevices.collect { it.deviceNetworkId }
 
@@ -113,8 +118,7 @@ def devicesPage() {
   getAvailableDevices()
   def availableDeviceNames = state.availableDevices.collectEntries { [it.key, it.value.name] }
 
-  // TODO Add/remove devices on next page?
-  return dynamicPage(name: 'devicesPage') {
+  return dynamicPage(name: 'devicePage') {
     if (availableDeviceNames?.size() > 0) {
       section {
         input(
@@ -130,6 +134,16 @@ def devicesPage() {
       section {
         paragraph 'No devices found'
       }
+    }
+  }
+}
+
+def deviceResultPage() {
+  updateDevices()
+
+  return dynamicPage(name: 'deviceResultPage', nextPage: 'mainPage') {
+    section {
+      paragraph 'Updated devices'
     }
   }
 }
@@ -181,12 +195,12 @@ def getAvailableDevices() {
 
     // Parse available devices from MSP Config
     response.MSPConfig.Backyard.Sensor.each {
-      addAvailableBackyardDevice(availableDevices, it.parent(), 'Air Temperature Sensor', 'Omnilogic Temperature Sensor')
+      addAvailableBackyardDevice(availableDevices, it.parent(), 'Air Temperature', 'Omnilogic Temperature Sensor')
     }
 
     // TODO Add relays/lights
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
-    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Temperature Sensor', 'Omnilogic Temperature Sensor') }
+    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Temperature', 'Omnilogic Temperature Sensor') }
     bowNodes.Filter.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Filter') }
     bowNodes.Pump.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Pump') }
     bowNodes.Chlorinator.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
@@ -207,7 +221,7 @@ def addAvailableBackyardDevice(availableDevices, deviceXmlNode, name, driverName
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
     bowId: omnilogicId,
-    name: "Omnilogic ${deviceXmlNode.Name.text()} ${name}",
+    name: "${deviceXmlNode.Name.text()} ${name}",
     driverName: driverName
   ]
 }
@@ -219,7 +233,7 @@ def addAvailableBowDevice(availableDevices, deviceXmlNode, name, driverName) {
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
     bowId: deviceXmlNode.parent().'System-Id'.text(),
-    name: "Omnilogic ${deviceXmlNode.parent().Name.text()} ${name ?: deviceXmlNode.Name.text()}",
+    name: "${deviceXmlNode.parent().Name.text()} ${name ?: deviceXmlNode.Name.text()}",
     driverName: driverName
   ]
 }
@@ -377,4 +391,8 @@ def formatApiRequest(name, parameters) {
             </Parameters>
         </Request>
         """.trim()
+}
+
+def getPlatform() {
+  physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
 }
