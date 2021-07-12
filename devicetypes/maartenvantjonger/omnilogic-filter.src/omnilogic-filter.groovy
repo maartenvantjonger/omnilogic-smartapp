@@ -14,7 +14,7 @@ metadata {
     capability 'Actuator'
     capability 'Refresh'
 
-    if (parent.getPlatform() == 'Hubitat') {
+    if (getPlatform() == 'Hubitat') {
       capability 'Fan Control'
     } else {
       capability 'Fan Speed'
@@ -157,4 +157,8 @@ def setPumpSpeed(speed) {
       updateState(speed)
     }
   }
+}
+
+def getPlatform() {
+  physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
 }
