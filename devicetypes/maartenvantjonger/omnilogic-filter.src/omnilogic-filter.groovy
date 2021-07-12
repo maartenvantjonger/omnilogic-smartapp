@@ -14,7 +14,7 @@ metadata {
     capability 'Actuator'
     capability 'Refresh'
 
-    if (parent.getPlatform == 'Hubitat') {
+    if (parent.getPlatform() == 'Hubitat') {
       capability 'Fan Control'
     } else {
       capability 'Fan Speed'
