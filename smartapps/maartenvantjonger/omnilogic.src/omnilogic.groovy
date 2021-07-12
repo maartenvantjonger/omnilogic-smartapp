@@ -260,10 +260,6 @@ def createDevice(omnilogicId, bowId, name, driverName) {
 def updateDevices() {
   logDebug('Executing updateDevices')
 
-  if (settings.devicesToUse == null) {
-    return
-  }
-
   // Delete devices that were unselected
   deleteDevicesExcept(settings.devicesToUse)
 
