@@ -27,14 +27,14 @@ metadata {
 
     multiAttributeTile(name: 'thermostatFull', type: 'thermostat', width: 6, height: 4) {
       tileAttribute('device.temperature', key: 'PRIMARY_CONTROL') {
-        attributeState('temp', label:'${currentValue}', unit: 'dF', defaultState: true)
+        attributeState('temp', label:'${currentValue}', unit: 'F', defaultState: true)
       }
       tileAttribute('device.thermostatMode', key: 'THERMOSTAT_MODE') {
         attributeState('off', label: '${name}')
         attributeState('heat', label: '${name}')
       }
       tileAttribute('device.heatingSetpoint', key: 'HEATING_SETPOINT') {
-        attributeState('heatingSetpoint', label: '${currentValue}', unit: 'dF', defaultState: true)
+        attributeState('heatingSetpoint', label: '${currentValue}', unit: 'F', defaultState: true)
       }
     }
 
@@ -52,7 +52,7 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, displayed: true)
-  sendEvent(name: 'unit', value: 'dF')
+  sendEvent(name: 'unit', value: 'F')
   sendEvent(name: 'constraints', value: [min: 65, max: 104], displayed: true)
 
   // TODO implement

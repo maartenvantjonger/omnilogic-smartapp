@@ -42,7 +42,7 @@ def initialize(omnilogicId, attributes) {
   settings.bowId = attributes['bowId']
   settings.sensorType = attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air'
 
-  sendEvent(name: 'unit', value: attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'dF' : 'dC')
+  sendEvent(name: 'unit', value: attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C')
 }
 
 def refresh() {
