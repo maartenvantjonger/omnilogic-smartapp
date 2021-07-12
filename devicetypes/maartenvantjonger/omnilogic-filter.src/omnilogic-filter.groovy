@@ -31,10 +31,10 @@ metadata {
     }
 
 		standardTile('fanSpeed', 'device.fanSpeed', width: 6, height: 4, canChangeIcon: true, decoration: 'flat') {
-      state(0, label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
-      state(1, label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state(2, label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state(3, label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state('0', label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
+      state('1', label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state('2', label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state('3', label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
 		}
 
     main('switch')
@@ -77,7 +77,6 @@ def updateState(speed) {
 
   def onOff = speed == 0 ? 'off' : 'on'
   sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
   sendEvent(name: 'level', value: speed, displayed: true)
 }
 
