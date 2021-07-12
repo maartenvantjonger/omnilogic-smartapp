@@ -118,7 +118,7 @@ def devicePage() {
   getAvailableDevices()
   def availableDeviceNames = state.availableDevices.collectEntries { [it.key, it.value.name] }
 
-  return dynamicPage(name: 'devicePage') {
+  return dynamicPage(name: 'devicePage', nextPage: 'deviceResultPage') {
     if (availableDeviceNames?.size() > 0) {
       section {
         input(
