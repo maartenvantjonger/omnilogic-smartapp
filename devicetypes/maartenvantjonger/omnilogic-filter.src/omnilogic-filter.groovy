@@ -30,9 +30,12 @@ metadata {
       state('on', label: '${name}', action: 'off')
     }
 
-    controlTile('fanSpeed', 'device.fanSpeed', 'slider', range: '(1..100)', height: 2, width: 2, canChangeIcon: true, decoration: 'flat', inactiveLabel: false) {
-      state 'fanSpeed', action: 'setFanSpeed'
-    }
+		standardTile('fanSpeed', 'device.fanSpeed', width: 6, height: 4, canChangeIcon: true, decoration: 'flat') {
+      state('0', label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
+      state('1', label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state('2', label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state('3', label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
+		}
 
     main('switch')
     details(['switch', 'fanSpeed'])
@@ -43,6 +46,15 @@ def initialize(omnilogicId, bowId) {
 	parent.logDebug('Executing Omnilogic Filter initialize')
   sendEvent(name: 'omnilogicId', value: omnilogicId)
   sendEvent(name: 'bowId', value: bowId)
+  sendEvent(name: 'level', value: 0)
+
+  if (getPlatform() == 'Hubitat') {
+    sendEvent(name: 'level', value: 0)
+    sendEvent(name: 'fanSpeed', value: 'off')
+    sendEvent(name: 'supportedFanSpeeds', value: ['off', 'low', 'medium', 'high'])
+  } else {
+    sendEvent(name: 'fanSpeed', value: 0)
+  }
 }
 
 def refresh() {
@@ -64,6 +76,7 @@ def updateState(speed) {
   def onOff = speed == 0 ? 'off' : 'on'
   sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
   sendEvent(name: 'fanSpeed', value: speed, displayed: true)
+  sendEvent(name: 'level', value: speed, displayed: true)
 }
 
 def on() {
@@ -76,26 +89,6 @@ def off() {
   setPumpSpeed(0)
 }
 
-def high() {
-  setPumpSpeed(100)
-}
-
-def medium() {
-  setPumpSpeed(85)
-}
-
-def low() {
-  setPumpSpeed(75)
-}
-
-def raiseFanSpeed() {
-  setPumpSpeed(100)
-}
-
-def lowerFanSpeed() {
-  setPumpSpeed(75)
-}
-
 def setLevel(level) {
   parent.logDebug("Executing Omnilogic Filter setLevel ${level}")
   setPumpSpeed(level)
@@ -103,31 +96,22 @@ def setLevel(level) {
 
 def setSpeed(speed) {
   parent.logDebug("Executing Omnilogic Filter setSpeed ${speed}")
+  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed) {
+    case 'off':
+      setPumpSpeed(0)
+      break
     case 'low':
       setPumpSpeed(75)
-      break
-    case 'medium-low':
-      setPumpSpeed(80)
       break
     case 'medium':
       setPumpSpeed(85)
       break
-    case 'medium-high':
-      setPumpSpeed(90)
-      break
     case 'high':
       setPumpSpeed(100)
       break
-    case 'on':
-      setPumpSpeed(100)
-      break
-    case 'off':
-      setPumpSpeed(0)
-      break
-    case 'auto':
-      setPumpSpeed(100)
+    default:
       break
   }
 }
@@ -135,7 +119,7 @@ def setSpeed(speed) {
 def setFanSpeed(speed) {
   parent.logDebug("Executing Omnilogic Filter setFanSpeed ${speed}")
 
-  switch (speed) {
+  switch (speed as Integer) {
     case 0:
       setPumpSpeed(0)
       break
@@ -148,6 +132,11 @@ def setFanSpeed(speed) {
     case 3:
       setPumpSpeed(100)
       break
+    case 4:
+      setPumpSpeed(100)
+      break
+    default:
+     break
   }
 }
 
