@@ -31,17 +31,17 @@ metadata {
   }
 
   preferences {
-    input(name: 'unit', type: 'enum', title: 'enum', options: ['F': 'Fahrenheit', 'C': 'Celcius'], required: true, defaultValue: 'F')
     input(name: 'useLastTemperature', type: 'bool', title: 'Show last recorded actual temperature. Ignore -1 temperature updates.', defaultValue: true)
   }
 }
 
-def initialize(omnilogicId, bowId) {
+def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
-  sendEvent(name: 'omnilogicId', value: omnilogicId)
-  sendEvent(name: 'bowId', value: bowId)
 
-  settings.unit = 'F'
+  settings.omnilogicId = omnilogicId
+  settings.bowId = attributes['bowId']
+  settings.sensorType = attributes['sensorType'] ? 'SENSOR_WATER_TEMP' ? 'water' : 'air'
+  settings.unit = attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'dF' : 'dC'
 }
 
 def refresh() {
@@ -53,7 +53,8 @@ def parseStatus(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
 	parent.logDebug(statusXmlNode)
 
-  def temperature = statusXmlNode?.@waterTemp?.text() ?: statusXmlNode?.@airTemp?.text()
+  def temperature = settings.sensorType == 'water' ?
+    statusXmlNode?.@waterTemp?.text() : statusXmlNode?.@airTemp?.text()
   updateState(temperature.toInteger())
 }
 

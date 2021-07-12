@@ -15,7 +15,6 @@ metadata {
     capability "Temperature Measurement"
     capability "Thermostat"
     capability "Thermostat Heating Setpoint"
-    capability "Thermostat Operating State"
     capability "Thermostat Mode"
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
@@ -26,24 +25,16 @@ metadata {
       state 'heatingSetpoint', action: 'setHeatingSetpoint'
     }
 
-    multiAttributeTile(name:"thermostatFull", type:"thermostat", width:6, height:4) {
-      tileAttribute("device.temperature", key: "PRIMARY_CONTROL") {
-          attributeState("temp", label:'${currentValue}', unit:"dF", defaultState: true)
+    multiAttributeTile(name: 'thermostatFull', type: 'thermostat', width: 6, height: 4) {
+      tileAttribute('device.temperature', key: 'PRIMARY_CONTROL') {
+        attributeState('temp', label:'${currentValue}', unit: 'dF', defaultState: true)
       }
-      tileAttribute("device.temperature", key: "VALUE_CONTROL") {
-          attributeState("VALUE_UP", action: "tempUp")
-          attributeState("VALUE_DOWN", action: "tempDown")
+      tileAttribute('device.thermostatMode', key: 'THERMOSTAT_MODE') {
+        attributeState('off', label: '${name}')
+        attributeState('heat', label: '${name}')
       }
-      tileAttribute("device.thermostatOperatingState", key: "OPERATING_STATE") {
-          attributeState("idle", backgroundColor:"#00A0DC")
-          attributeState("heating", backgroundColor:"#e86d13")
-      }
-      tileAttribute("device.thermostatMode", key: "THERMOSTAT_MODE") {
-          attributeState("off", label:'${name}')
-          attributeState("heat", label:'${name}')
-      }
-      tileAttribute("device.heatingSetpoint", key: "HEATING_SETPOINT") {
-          attributeState("heatingSetpoint", label:'${currentValue}', unit:"dF", defaultState: true)
+      tileAttribute('device.heatingSetpoint', key: 'HEATING_SETPOINT') {
+        attributeState('heatingSetpoint', label: '${currentValue}', unit: 'dF', defaultState: true)
       }
     }
 
@@ -52,10 +43,12 @@ metadata {
   }
 }
 
-def initialize(omnilogicId, bowId) {
+def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Heater initialize')
-  sendEvent(name: 'omnilogicId', value: omnilogicId)
-  sendEvent(name: 'bowId', value: bowId)
+  
+  settings.omnilogicId = omnilogicId
+  settings.bowId = attributes['bowId']
+
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
 }
 
@@ -79,7 +72,6 @@ def updateState(enabled, heatingSetpoint) {
   if (enabled != null) {
     sendEvent(name: 'switch', value: enabled ? 'on' : 'off', displayed: true, isStateChange: true)
     sendEvent(name: 'thermostatMode', value: enabled ? 'heat' : 'off', displayed: true, isStateChange: true)
-    sendEvent(name: 'thermostatOperatingState', value: enabled ? 'heating' : 'idle', displayed: true, isStateChange: true)
   }
 
   if (heatingSetpoint != null) {

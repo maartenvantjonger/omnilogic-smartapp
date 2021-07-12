@@ -194,23 +194,23 @@ def getAvailableDevices() {
 
 
     // Parse available devices from MSP Config
-    response.MSPConfig.Backyard.Sensor.each {
-      addAvailableBackyardDevice(availableDevices, it.parent(), 'Thermometer', 'Omnilogic Temperature Sensor')
+    response.MSPConfig.Backyard.each {
+      addAvailableTemperatureSensor(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor')
     }
 
     // TODO Add relays/lights
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
-    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor') }
-    bowNodes.Filter.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Filter') }
-    bowNodes.Pump.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Pump') }
-    bowNodes.Chlorinator.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
-    bowNodes.Heater.each { addAvailableBowDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
+    bowNodes.each { addAvailableTemperatureSensor(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor') }
+    bowNodes.Filter.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Filter') }
+    bowNodes.Pump.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Pump') }
+    bowNodes.Chlorinator.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
+    bowNodes.Heater.each { addAvailableDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
 
     state.availableDevices = availableDevices
   }
 }
 
-def addAvailableBackyardDevice(availableDevices, deviceXmlNode, name, driverName) {
+def addAvailableTemperatureSensor(availableDevices, deviceXmlNode, name, driverName) {
   def omnilogicId = deviceXmlNode.'System-Id'.text()
   if (omnilogicId == '0') {
     omnilogicId = settings.mspId
@@ -220,21 +220,27 @@ def addAvailableBackyardDevice(availableDevices, deviceXmlNode, name, driverName
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    bowId: omnilogicId,
     name: "${deviceXmlNode.Name.text()} ${name}",
-    driverName: driverName
+    driverName: driverName,
+    attributes: [
+      bowId: omnilogicId,
+      sensorType: deviceXmlNode.Sensor.Type.text(),
+      unit: deviceXmlNode.Sensor.Units.text()
+    ]
   ]
 }
 
-def addAvailableBowDevice(availableDevices, deviceXmlNode, name, driverName) {
+def addAvailableDevice(availableDevices, deviceXmlNode, name, driverName) {
   def omnilogicId = deviceXmlNode.'System-Id'.text()
   def deviceId = getDeviceId(omnilogicId)
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    bowId: deviceXmlNode.parent().'System-Id'.text(),
     name: "${deviceXmlNode.parent().Name.text()} ${name ?: deviceXmlNode.Name.text()}",
-    driverName: driverName
+    driverName: driverName,
+    attributes: [
+      bowId: deviceXmlNode.parent().'System-Id'.text()
+    ]
   ]
 }
 
@@ -242,16 +248,15 @@ def getDeviceId(omnilogicId) {
   return "omnilogic-${omnilogicId}"
 }
 
-def createDevice(omnilogicId, bowId, name, driverName) {
+def createDevice(omnilogicId, name, driverName, attributes) {
   logDebug("Executing createDevice for ${name}")
 
   def deviceId = getDeviceId(omnilogicId)
   def childDevice = getChildDevice(deviceId)
 
   if (childDevice == null) {
-    def attributes = [name: name, completedSetup: true]
-    childDevice = addChildDevice('maartenvantjonger', driverName, deviceId, null, attributes)
-    childDevice.initialize(omnilogicId, bowId)
+    childDevice = addChildDevice('maartenvantjonger', driverName, deviceId, null, [name: name, completedSetup: true])
+    childDevice.initialize(omnilogicId, attributes)
   }
 
   return childDevice

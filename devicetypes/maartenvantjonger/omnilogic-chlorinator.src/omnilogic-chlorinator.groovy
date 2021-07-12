@@ -33,10 +33,13 @@ metadata {
   }
 }
 
-def initialize(omnilogicId, bowId) {
+def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Chlorinator initialize')
-  sendEvent(name: 'omnilogicId', value: omnilogicId)
-  sendEvent(name: 'bowId', value: bowId)
+
+  settings.omnilogicId = omnilogicId
+  settings.bowId = attributes['bowId']
+
+  sendEvent(name: 'level', value: 0, displayed: true)
 }
 
 def refresh() {
