@@ -31,10 +31,10 @@ metadata {
     }
 
 		standardTile('fanSpeed', 'device.fanSpeed', width: 6, height: 4, canChangeIcon: true, decoration: 'flat') {
-      state('0', label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
-      state('1', label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state('2', label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state('3', label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state(0, label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
+      state(1, label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state(2, label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
+      state(3, label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
 		}
 
     main('switch')
@@ -118,6 +118,7 @@ def setSpeed(speed) {
 
 def setFanSpeed(speed) {
   parent.logDebug("Executing Omnilogic Filter setFanSpeed ${speed}")
+  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed as Integer) {
     case 0:
