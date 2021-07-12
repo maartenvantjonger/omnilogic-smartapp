@@ -45,11 +45,19 @@ metadata {
 
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Heater initialize')
-  
+
   settings.omnilogicId = omnilogicId
   settings.bowId = attributes['bowId']
 
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
+  sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
+  sendEvent(name: 'temperature', value: 0, displayed: true)
+  sendEvent(name: 'unit', value: 'dF')
+  sendEvent(name: 'constraints', value: [min: 65, max: 104], displayed: true)
+
+  // TODO implement
+  // <Min-Settable-Water-Temp>65</Min-Settable-Water-Temp>
+  // <Max-Settable-Water-Temp>104</Max-Settable-Water-Temp>
 }
 
 def refresh() {
