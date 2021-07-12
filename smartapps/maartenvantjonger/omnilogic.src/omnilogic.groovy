@@ -195,12 +195,12 @@ def getAvailableDevices() {
 
     // Parse available devices from MSP Config
     response.MSPConfig.Backyard.Sensor.each {
-      addAvailableBackyardDevice(availableDevices, it.parent(), 'Temperature', 'Omnilogic Temperature Sensor')
+      addAvailableBackyardDevice(availableDevices, it.parent(), 'Thermometer', 'Omnilogic Temperature Sensor')
     }
 
     // TODO Add relays/lights
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
-    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Temperature', 'Omnilogic Temperature Sensor') }
+    bowNodes.each { addAvailableBackyardDevice(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor') }
     bowNodes.Filter.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Filter') }
     bowNodes.Pump.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Pump') }
     bowNodes.Chlorinator.each { addAvailableBowDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
