@@ -277,7 +277,7 @@ def updateDevices() {
     .each { deviceId ->
       def device = state.availableDevices[deviceId]
       if (device != null) {
-        createDevice(device.omnilogicId, device.bowId, device.name, device.driverName)
+        createDevice(device.omnilogicId, device.name, device.driverName, device.attributes)
       }
     }
 
