@@ -195,7 +195,7 @@ def getAvailableDevices() {
 
     // Parse available devices from MSP Config
     response.MSPConfig.Backyard.Sensor.each {
-      addAvailableBackyardDevice(availableDevices, it.parent(), 'Air Temperature', 'Omnilogic Temperature Sensor')
+      addAvailableBackyardDevice(availableDevices, it.parent(), 'Temperature', 'Omnilogic Temperature Sensor')
     }
 
     // TODO Add relays/lights
