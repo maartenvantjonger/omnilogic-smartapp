@@ -43,8 +43,8 @@ def parseStatus(statusXmlNode) {
 	parent.logDebug('Executing Omnilogic Pump parseStatus')
 	parent.logDebug(statusXmlNode)
 
-  def pumpState = statusXmlNode?.@pumpState?.text().toInteger()
-  updateState(pumpState == 1)
+  def pumpState = statusXmlNode?.@pumpState?.text() ?: statusXmlNode?.@filterState?.text()
+  updateState(pumpState == '1')
 }
 
 def updateState(on) {
