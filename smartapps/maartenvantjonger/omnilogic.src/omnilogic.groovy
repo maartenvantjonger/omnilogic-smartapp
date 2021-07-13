@@ -169,7 +169,9 @@ def getTelemetryData(callback) {
     }
 
     def serializedTelemetryData = groovy.xml.XmlUtil.serialize(response)
-    state.telemetryData = groovy.xml.XmlUtil.escapeXml(serializedTelemetryData)
+    state.telemetryData = getPlatform() == 'Hubitat'
+      ? groovy.xml.XmlUtil.escapeXml(serializedTelemetryData)
+      : serializedTelemetryData
 
     if (callback != null) {
       callback(response)
