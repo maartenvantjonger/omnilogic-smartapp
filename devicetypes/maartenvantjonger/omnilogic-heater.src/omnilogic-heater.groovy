@@ -52,11 +52,10 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, displayed: true)
   sendEvent(name: 'unit', value: 'F', displayed: true)
-  sendEvent(name: 'constraints', value: [min: 65, max: 104], displayed: true)
-
-  // TODO implement
-  // <Min-Settable-Water-Temp>65</Min-Settable-Water-Temp>
-  // <Max-Settable-Water-Temp>104</Max-Settable-Water-Temp>
+  sendEvent(name: 'minimum', value: 65, displayed: true)
+  sendEvent(name: 'maximum', value: 104, displayed: true)
+  sendEvent(name: 'min', value: 65, displayed: true)
+  sendEvent(name: 'max', value: 104, displayed: true)
 }
 
 def refresh() {
