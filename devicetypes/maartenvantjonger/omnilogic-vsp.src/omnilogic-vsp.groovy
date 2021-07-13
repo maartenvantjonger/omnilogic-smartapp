@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Variable Speed Pump
+ *  Omnilogic VSP (Variable Speed Pump)
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition(
-    name: 'Omnilogic Variable Speed Pump',
+    name: 'Omnilogic VSP',
     namespace: 'maartenvantjonger',
     author: 'Maarten van Tjonger'
   ) {
@@ -43,7 +43,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Variable Speed Pump initialize')
+	parent.logDebug('Executing Omnilogic VSP initialize')
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
@@ -59,12 +59,12 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Variable Speed Pump refresh')
+	parent.logDebug('Executing Omnilogic VSP refresh')
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Variable Speed Pump parseStatus')
+	parent.logDebug('Executing Omnilogic VSP parseStatus')
 	parent.logDebug(statusXmlNode)
 
   def filterSpeed = statusXmlNode?.@filterSpeed?.text().toInteger()
@@ -72,7 +72,7 @@ def parseStatus(statusXmlNode) {
 }
 
 def updateState(speed) {
-	parent.logDebug('Executing Omnilogic Variable Speed Pump updateState')
+	parent.logDebug('Executing Omnilogic VSP updateState')
 
   def onOff = speed == 0 ? 'off' : 'on'
   sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
@@ -80,22 +80,22 @@ def updateState(speed) {
 }
 
 def on() {
-  parent.logDebug('Executing Omnilogic Variable Speed Pump on')
+  parent.logDebug('Executing Omnilogic VSP on')
   setPumpSpeed(100)
 }
 
 def off() {
-	parent.logDebug('Executing Omnilogic Variable Speed Pump off')
+	parent.logDebug('Executing Omnilogic VSP off')
   setPumpSpeed(0)
 }
 
 def setLevel(level) {
-  parent.logDebug("Executing Omnilogic Variable Speed Pump setLevel ${level}")
+  parent.logDebug("Executing Omnilogic VSP setLevel ${level}")
   setPumpSpeed(level)
 }
 
 def setSpeed(speed) {
-  parent.logDebug("Executing Omnilogic Variable Speed Pump setSpeed ${speed}")
+  parent.logDebug("Executing Omnilogic VSP setSpeed ${speed}")
   sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed) {
@@ -117,7 +117,7 @@ def setSpeed(speed) {
 }
 
 def setFanSpeed(speed) {
-  parent.logDebug("Executing Omnilogic Variable Speed Pump setFanSpeed ${speed}")
+  parent.logDebug("Executing Omnilogic VSP setFanSpeed ${speed}")
   sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed as Integer) {
