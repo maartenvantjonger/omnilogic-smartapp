@@ -54,7 +54,7 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
-  sendEvent(name: 'temperature', value: 0, displayed: true)
+  sendEvent(name: 'temperature', value: 0, unit: 'F', displayed: true)
   sendEvent(name: 'unit', value: 'F', displayed: true)
   sendEvent(name: 'minimum', value: 65, unit: 'F', displayed: true)
   sendEvent(name: 'maximum', value: 104, unit: 'F', displayed: true)
@@ -85,8 +85,8 @@ def updateState(enabled, heatingSetpoint) {
   }
 
   if (heatingSetpoint != null) {
-    sendEvent(name: 'heatingSetpoint', value: heatingSetpoint, displayed: true)
-    sendEvent(name: 'thermostatSetpoint', value: heatingSetpoint, displayed: true)
+    sendEvent(name: 'heatingSetpoint', value: heatingSetpoint, unit: 'F', displayed: true)
+    sendEvent(name: 'thermostatSetpoint', value: heatingSetpoint, unit: 'F', displayed: true)
   }
 }
 
