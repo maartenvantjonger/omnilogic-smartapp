@@ -195,22 +195,22 @@ def getAvailableDevices() {
 
     // Parse available devices from MSP Config
     response.MSPConfig.Backyard.each {
-      addAvailableTemperatureSensor(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor')
+      addAvailableTemperatureSensor(availableDevices, it)
     }
 
     // TODO Add relays/lights
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
-    bowNodes.each { addAvailableTemperatureSensor(availableDevices, it, 'Thermometer', 'Omnilogic Temperature Sensor') }
-    bowNodes.Filter.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Filter') }
-    bowNodes.Pump.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Pump') }
-    bowNodes.Chlorinator.each { addAvailableDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
-    bowNodes.Heater.each { addAvailableDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
+    bowNodes.each { addTemperatureSensor(availableDevices, it) }
+    bowNodes.Filter.each { addPump(availableDevices, it) }
+    bowNodes.Pump.each { addPump(availableDevices, it) }
+    bowNodes.Chlorinator.each { addDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
+    bowNodes.Heater.each { addDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
 
     state.availableDevices = availableDevices
   }
 }
 
-def addAvailableTemperatureSensor(availableDevices, deviceXmlNode, name, driverName) {
+def addTemperatureSensor(availableDevices, deviceXmlNode, name, driverName) {
   def omnilogicId = deviceXmlNode.'System-Id'.text()
   def bowId = omnilogicId
 
@@ -224,8 +224,8 @@ def addAvailableTemperatureSensor(availableDevices, deviceXmlNode, name, driverN
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: "${deviceXmlNode.Name.text()} ${name}",
-    driverName: driverName,
+    name: deviceXmlNode.Name.text(),
+    driverName: 'Omnilogic Temperature Sensor',
     attributes: [
       bowId: bowId,
       sensorType: deviceXmlNode.Sensor.Type.text(),
@@ -234,7 +234,14 @@ def addAvailableTemperatureSensor(availableDevices, deviceXmlNode, name, driverN
   ]
 }
 
-def addAvailableDevice(availableDevices, deviceXmlNode, name, driverName) {
+def addPump(availableDevices, deviceXmlNode) {
+  def type = deviceXmlNode.'Filter-Type'.text() ?: deviceXmlNode.'Type'.text()
+  def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
+
+  addAvailableDevice(availableDevices, deviceXmlNode, null, isVsp ? 'Omnilogic Variable Speed Pump' : 'Omnilogic Pump')
+}
+
+def addDevice(availableDevices, deviceXmlNode, name, driverName) {
   def omnilogicId = deviceXmlNode.'System-Id'.text()
   def deviceId = getDeviceId(omnilogicId)
 
