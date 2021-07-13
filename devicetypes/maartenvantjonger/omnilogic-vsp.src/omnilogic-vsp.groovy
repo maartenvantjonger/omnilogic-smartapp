@@ -47,14 +47,14 @@ def initialize(omnilogicId, attributes) {
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
-  sendEvent(name: 'level', value: 0)
+  sendEvent(name: 'level', value: 0, displayed: true)
 
   if (getPlatform() == 'Hubitat') {
-    sendEvent(name: 'level', value: 0)
-    sendEvent(name: 'fanSpeed', value: 'off')
-    sendEvent(name: 'supportedFanSpeeds', value: ['off', 'low', 'medium', 'high'])
+    sendEvent(name: 'level', value: 0, displayed: true)
+    sendEvent(name: 'fanSpeed', value: 'off', displayed: true)
+    sendEvent(name: 'supportedFanSpeeds', value: ['off', 'low', 'medium', 'high'], displayed: true)
   } else {
-    sendEvent(name: 'fanSpeed', value: 0)
+    sendEvent(name: 'fanSpeed', value: 0, displayed: true)
   }
 }
 
