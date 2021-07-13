@@ -38,10 +38,14 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
 
+  def bowId = attributes['bowId']
+  def sensorType = attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air'
+  def unit = attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
+
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
-  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
-  sendEvent(name: 'sensorType', value: attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air', displayed: true)
-  sendEvent(name: 'unit', value: value: attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C', displayed: true)
+  sendEvent(name: 'bowId', value: bowId, displayed: true)
+  sendEvent(name: 'sensorType', value: sensorType, displayed: true)
+  sendEvent(name: 'unit', value: value: unit, displayed: true)
 }
 
 def refresh() {
@@ -64,7 +68,7 @@ def updateState(temperature) {
   if (temperature > -1) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
     sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
-    sendEvent(name: 'lastTemperatureDate', value:  new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
+    sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
   } else if (!useLastTemperature) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
   }
