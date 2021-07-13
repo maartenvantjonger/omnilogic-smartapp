@@ -238,7 +238,7 @@ def addPump(availableDevices, deviceXmlNode) {
   def type = deviceXmlNode.'Filter-Type'.text() ?: deviceXmlNode.'Type'.text()
   def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
 
-  addAvailableDevice(availableDevices, deviceXmlNode, null, isVsp ? 'Omnilogic Variable Speed Pump' : 'Omnilogic Pump')
+  addAvailableDevice(availableDevices, deviceXmlNode, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
 }
 
 def addDevice(availableDevices, deviceXmlNode, name, driverName) {
