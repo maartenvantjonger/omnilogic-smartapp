@@ -210,11 +210,11 @@ def getAvailableDevices() {
   }
 }
 
-def addTemperatureSensor(availableDevices, deviceXmlNode, name, driverName) {
+def addTemperatureSensor(availableDevices, deviceXmlNode) {
   def omnilogicId = deviceXmlNode.'System-Id'.text()
   def bowId = omnilogicId
 
-  // For Backyard Air Temperature Sensor
+  // Use MSP ID for Backyard Air Temperature Sensor so we can update it using telemetry data
   if (omnilogicId == '0') {
     omnilogicId = settings.mspId
     bowId = null
