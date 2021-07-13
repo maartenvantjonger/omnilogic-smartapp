@@ -45,7 +45,7 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: bowId, displayed: true)
   sendEvent(name: 'sensorType', value: sensorType, displayed: true)
-  sendEvent(name: 'unit', value: value: unit, displayed: true)
+  sendEvent(name: 'unit', value: unit, displayed: true)
 }
 
 def refresh() {
