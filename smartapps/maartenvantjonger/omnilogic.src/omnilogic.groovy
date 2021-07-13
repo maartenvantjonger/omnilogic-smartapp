@@ -195,7 +195,7 @@ def getAvailableDevices() {
 
     // Parse available devices from MSP Config
     response.MSPConfig.Backyard.each {
-      addAvailableTemperatureSensor(availableDevices, it)
+      addTemperatureSensor(availableDevices, it)
     }
 
     // TODO Add relays/lights
