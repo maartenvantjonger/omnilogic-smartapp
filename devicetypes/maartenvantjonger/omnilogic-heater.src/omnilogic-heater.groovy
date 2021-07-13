@@ -18,6 +18,10 @@ metadata {
     capability "Thermostat Mode"
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
+    attribute 'min', 'number'
+    attribute 'max', 'number'
+    attribute 'minimum', 'number'
+    attribute 'maximum', 'number'
   }
 
   tiles {
@@ -52,10 +56,10 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, displayed: true)
   sendEvent(name: 'unit', value: 'F', displayed: true)
-  sendEvent(name: 'minimum', value: 65, displayed: true)
-  sendEvent(name: 'maximum', value: 104, displayed: true)
-  sendEvent(name: 'min', value: 65, displayed: true)
-  sendEvent(name: 'max', value: 104, displayed: true)
+  sendEvent(name: 'minimum', value: 65, unit: 'F', displayed: true)
+  sendEvent(name: 'maximum', value: 104, unit: 'F', displayed: true)
+  sendEvent(name: 'min', value: 65, unit: 'F', displayed: true)
+  sendEvent(name: 'max', value: 104, unit: 'F', displayed: true)
 }
 
 def refresh() {
