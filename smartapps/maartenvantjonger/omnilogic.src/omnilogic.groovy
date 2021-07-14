@@ -200,13 +200,14 @@ def getAvailableDevices() {
       addTemperatureSensor(availableDevices, it)
     }
 
-    // TODO Add relays/lights
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addPump(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Chlorinator.each { addDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
     bowNodes.Heater.each { addDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
+    bowNodes.Relay.each { addDevice(availableDevices, it, null, 'Omnilogic Relay') }
+    bowNodes.'ColorLogic-Light'.each { addDevice(availableDevices, it, null, 'Omnilogic Light') }
 
     state.availableDevices = availableDevices
   }
