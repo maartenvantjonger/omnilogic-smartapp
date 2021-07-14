@@ -151,9 +151,13 @@ def deviceResultPage() {
 def telemetryPage() {
   updateDeviceStatuses()
 
+  def telemetryData = getPlatform() == 'Hubitat'
+      ? groovy.xml.XmlUtil.escapeXml(state.telemetryData)
+      : state.telemetryData
+
   return dynamicPage(name: 'telemetryPage') {
     section {
-      paragraph state.telemetryData ?: 'No data'
+      paragraph telemetryData ?: 'No data'
     }
   }
 }
@@ -163,15 +167,22 @@ def getTelemetryData(callback) {
     [name: 'Version', value: 0]
   ]
 
+  // Cache telemetry data for 5 seconds
+  if (state.telemetryData && state.telemetryTimestamp + 5000 < now()) {
+    def telemetryData = new XmlSlurper().parseText(state.telemetryData)
+    callback(telemetryData)
+    return
+  }
+
   performApiRequest('GetTelemetryData', parameters) { response ->
     if (response == null) {
       return
     }
 
     def serializedTelemetryData = groovy.xml.XmlUtil.serialize(response)
-    state.telemetryData = getPlatform() == 'Hubitat'
-      ? groovy.xml.XmlUtil.escapeXml(serializedTelemetryData)
+    state.telemetryData = serializedTelemetryData
       : serializedTelemetryData
+    state.telemetryTimestamp = now()
 
     if (callback != null) {
       callback(response)
