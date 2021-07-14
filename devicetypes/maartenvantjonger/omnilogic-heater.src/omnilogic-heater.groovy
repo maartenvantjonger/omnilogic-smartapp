@@ -13,7 +13,6 @@ metadata {
     capability "Refresh"
     capability "Sensor"
     capability "Temperature Measurement"
-    capability "Thermostat"
     capability "Thermostat Heating Setpoint"
     capability "Thermostat Mode"
     attribute 'bowId', 'number'
@@ -58,8 +57,6 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'unit', value: 'F', displayed: true)
   sendEvent(name: 'minimum', value: 65, unit: 'F', displayed: true)
   sendEvent(name: 'maximum', value: 104, unit: 'F', displayed: true)
-  sendEvent(name: 'min', value: 65, unit: 'F', displayed: true)
-  sendEvent(name: 'max', value: 104, unit: 'F', displayed: true)
 }
 
 def refresh() {
