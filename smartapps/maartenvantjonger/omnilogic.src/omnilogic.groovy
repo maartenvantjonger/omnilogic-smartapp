@@ -145,7 +145,7 @@ def deviceResultPage() {
 
   return dynamicPage(name: 'deviceResultPage', nextPage: 'mainPage') {
     section {
-      paragraph updated ? 'Updated devices' : 'Failed to create devices. Make sure all Device Handlers are installed'
+      paragraph updated ? 'Updated devices' : 'Failed to create devices. Make sure all Omnilogic Device Handlers are installed'
     }
   }
 }
@@ -170,7 +170,7 @@ def getTelemetryData(callback) {
   ]
 
   // Cache telemetry data for 5 seconds
-  if (state.telemetryData && state.telemetryTimestamp + 5000 < now()) {
+  if (state.telemetryTimestamp != null && state.telemetryTimestamp + 5000 < now()) {
     def telemetryData = new XmlSlurper().parseText(state.telemetryData)
     callback(telemetryData)
     return
@@ -181,8 +181,8 @@ def getTelemetryData(callback) {
       return
     }
 
-    state.telemetryData = groovy.xml.XmlUtil.serialize(response)
     state.telemetryTimestamp = now()
+    state.telemetryData = groovy.xml.XmlUtil.serialize(response)
 
     if (callback != null) {
       callback(response)
