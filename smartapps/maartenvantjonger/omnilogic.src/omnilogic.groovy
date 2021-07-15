@@ -262,7 +262,7 @@ def addHeater(availableDevices, deviceDefinition) {
     name: "${bowDefinition.Name.text()} Heater",
     driverName: 'Omnilogic Heater',
     attributes: [
-      bowId: bowDefinition.'System-Id'.text()
+      bowId: bowDefinition.'System-Id'.text(),
       temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
     ]
   ]
@@ -330,7 +330,7 @@ def updateDeviceStatuses() {
   logDebug('Executing updateDeviceStatuses')
 
   getTelemetryData { telemetryData ->
-    childDevices.each { device -> {
+    childDevices.each { device ->
       def omnilogicId = device.currentValue('omnilogicId')
       def deviceStatus = telemetryData.children().find { it.@systemId?.text() == omnilogicId }
       device.parseStatus(deviceStatus, telemetryData)
