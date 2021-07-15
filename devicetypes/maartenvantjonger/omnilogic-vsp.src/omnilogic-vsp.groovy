@@ -88,7 +88,9 @@ def parseStatus(deviceStatus, telemetryData) {
 
 def on() {
   parent.logDebug('Executing Omnilogic VSP on')
-  setPumpSpeed(100)
+
+  def lastSpeed = device.currentValue('lastSpeed')?.toInteger()
+  setPumpSpeed(lastSpeed > 0 ? lastSpeed : 100)
 }
 
 def off() {
