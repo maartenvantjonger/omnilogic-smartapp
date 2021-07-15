@@ -170,7 +170,9 @@ def getTelemetryData(callback) {
   ]
 
   // Cache telemetry data for 5 seconds
-  if (state.telemetryTimestamp != null && state.telemetryTimestamp + 5000 < now()) {
+  if (state.telemetryTimestamp != null && state.telemetryTimestamp + 5000 > now()) {
+    logDebug('Returning cached telemetry data')
+
     def telemetryData = new XmlSlurper().parseText(state.telemetryData)
     callback(telemetryData)
     return
@@ -333,8 +335,8 @@ def updateDeviceStatuses() {
 
   getTelemetryData { telemetryData ->
     childDevices.each { device ->
-      def omnilogicId = device.currentValue('omnilogicId')
-      def deviceStatus = telemetryData.children().find { it.@systemId?.text() == omnilogicId }
+      def omnilogicId = device.currentValue('omnilogicId').toInteger()
+      def deviceStatus = telemetryData.children().find { it.@systemId?.text().toInteger() == omnilogicId }
       device.parseStatus(deviceStatus, telemetryData)
     }
   }
