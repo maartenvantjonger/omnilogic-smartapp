@@ -181,9 +181,7 @@ def getTelemetryData(callback) {
       return
     }
 
-    def serializedTelemetryData = groovy.xml.XmlUtil.serialize(response)
-    state.telemetryData = serializedTelemetryData
-      : serializedTelemetryData
+    state.telemetryData = groovy.xml.XmlUtil.serialize(response)
     state.telemetryTimestamp = now()
 
     if (callback != null) {
