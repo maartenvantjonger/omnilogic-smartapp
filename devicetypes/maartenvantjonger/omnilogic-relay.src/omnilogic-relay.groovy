@@ -12,6 +12,7 @@ metadata {
     capability 'Switch'
     capability 'Actuator'
     capability 'Refresh'
+    capability 'Health Check'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }
@@ -39,17 +40,17 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Relay parseStatus')
-	parent.logDebug(statusXmlNode)
-
-  def relayState = statusXmlNode?.@relayState?.text()
-  updateState(relayState == '1')
+def ping() {
+	parent.logDebug('Executing Omnilogic Relay ping')
+  refresh()
 }
 
-def updateState(on) {
-  def onOff = on ? 'on' : 'off'
-  sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+def parseStatus(deviceStatus, telemetryData) {
+	parent.logDebug('Executing Omnilogic Relay parseStatus')
+	parent.logDebug(deviceStatus)
+
+  def onOff = deviceStatus?.@relayState?.text() == '1' ? 'on' : 'off'
+  sendEvent(name: 'switch', value: onOff, displayed: true)
 }
 
 def on() {
@@ -79,7 +80,8 @@ def setRelayState(isOn) {
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(isOn)
+      def onOff = isOn ? 'on' : 'off'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
 }

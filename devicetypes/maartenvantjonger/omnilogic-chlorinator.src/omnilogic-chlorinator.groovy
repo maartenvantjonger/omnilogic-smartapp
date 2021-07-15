@@ -13,6 +13,7 @@ metadata {
     capability 'Switch Level'
     capability 'Actuator'
     capability 'Refresh'
+    capability 'Health Check'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'level', 'number'
@@ -46,26 +47,41 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
-	parent.logDebug(statusXmlNode)
-
-  def enabled = statusXmlNode.@status.text() != "0"
-  def level = statusXmlNode['@Timed-Percent'].text().toInteger()
-  updateState(enabled, level)
+def ping() {
+	parent.logDebug('Executing Omnilogic Chlorinator ping')
+  refresh()
 }
 
-def updateState(enabled, level) {
-	parent.logDebug('Executing updateState')
+def parseStatus(deviceStatus, telemetryData) {
+	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
+	parent.logDebug(deviceStatus)
 
-  if (enabled != null) {
-    def onOff = enabled ? 'on' : 'off'
-    sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-  }
+  def onOff = deviceStatus.@status.text() != '0' ? 'on' : 'off'
+  sendEvent(name: 'switch', value: onOff, displayed: true)
 
-  if (level != null) {
-    sendEvent(name: 'level', value: level, displayed: true)
-  }
+  def level = deviceStatus['@Timed-Percent'].text()
+  sendEvent(name: 'level', value: level, displayed: true)
+
+  def status = deviceStatus.@status.text()
+  sendEvent(name: 'status', value: status, displayed: true)
+
+  def scMode = deviceStatus.@scMode.text()
+  sendEvent(name: 'scMode', value: scMode, displayed: true)
+
+  def instantSaltLevel = deviceStatus.@instantSaltLevel.text()
+  sendEvent(name: 'instantSaltLevel', value: instantSaltLevel, displayed: true)
+
+  def avgSaltLevel = deviceStatus.@avgSaltLevel.text()
+  sendEvent(name: 'avgSaltLevel', value: avgSaltLevel, displayed: true)
+
+  def chlrAlert = deviceStatus.@chlrAlert.text()
+  sendEvent(name: 'chlrAlert', value: chlrAlert, displayed: true)
+
+  def chlrError = deviceStatus.@chlrError.text()
+  sendEvent(name: 'chlrError', value: chlrError, displayed: true)
+
+  def operatingMode = deviceStatus.@operatingMode.text()
+  sendEvent(name: 'operatingMode', value: operatingMode, displayed: true)
 }
 
 def on() {
@@ -83,7 +99,7 @@ def setLevel(level) {
   setChlorinatorLevel(level)
 }
 
-def enableChlorinator(level) {
+def setChlorinatorLevel(level) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -100,7 +116,9 @@ def enableChlorinator(level) {
   parent.performApiRequest('SetCHLOREnable', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(enable, level)
+      def onOff = level != 0 ? 'on' : 'off'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
     }
   }
 }
@@ -122,7 +140,9 @@ def enableSuperChlorinator(enable) {
   parent.performApiRequest('SetUISuperCHLORCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(enable, 100)
+      def onOff = enable ? 'on' : 'off'
+      sendEvent(name: 'switch', value: 'on', displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: 150, displayed: true, isStateChange: true)
     }
   }
 }

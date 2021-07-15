@@ -9,8 +9,9 @@ metadata {
     namespace: 'maartenvantjonger',
     author: 'Maarten van Tjonger'
   ) {
-    capability 'Refresh'
     capability 'Sensor'
+    capability 'Refresh'
+    capability 'Health Check'
     capability 'Temperature Measurement'
     attribute 'omnilogicId', 'string'
     attribute 'lastTemperature', 'number'
@@ -38,14 +39,14 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
 
-  def bowId = attributes['bowId']
   def sensorType = attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air'
-  def unit = attributes['unit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
+  def temperatureUnit = attributes['temperatureUnit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
-  sendEvent(name: 'bowId', value: bowId, displayed: true)
+  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'sensorType', value: sensorType, displayed: true)
-  sendEvent(name: 'unit', value: unit, displayed: true)
+  sendEvent(name: 'temperature', value: 0, unit: temperatureUnit, displayed: true)
+  sendEvent(name: 'unit', value: temperatureUnit, displayed: true)
 }
 
 def refresh() {
@@ -53,24 +54,23 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
+def ping() {
+	parent.logDebug('Executing Omnilogic Temperature Sensor ping')
+  refresh()
+}
+
+def parseStatus(deviceStatus, telemetryData) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
-	parent.logDebug(statusXmlNode)
+	parent.logDebug(deviceStatus)
 
   def temperature = device.currentValue('sensorType') == 'water' ?
-    statusXmlNode?.@waterTemp?.text() : statusXmlNode?.@airTemp?.text()
-  updateState(temperature.toInteger())
-}
-
-def updateState(temperature) {
-  parent.logDebug("Executing Omnilogic Temperature Sensor updateState temperature ${temperature}")
+    deviceStatus?.@waterTemp?.text() : deviceStatus?.@airTemp?.text()
 
   if (temperature > -1) {
-    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
     sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
-    sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
+    sendEvent(name: 'lastTemperatureDate', value: new Date().format('yyyy-MM-dd'T'HH:mm:ss'), displayed: true)
   } else if (!useLastTemperature) {
-    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
   }
 }
-

@@ -12,6 +12,7 @@ metadata {
     capability 'Switch'
     capability 'Actuator'
     capability 'Refresh'
+    capability 'Health Check'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }
@@ -39,17 +40,18 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Pump parseStatus')
-	parent.logDebug(statusXmlNode)
-
-  def pumpState = statusXmlNode?.@pumpState?.text() ?: statusXmlNode?.@filterState?.text()
-  updateState(pumpState == '1')
+def ping() {
+	parent.logDebug('Executing Omnilogic Pump ping')
+  refresh()
 }
 
-def updateState(on) {
-  def onOff = on ? 'on' : 'off'
-  sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+def parseStatus(deviceStatus, telemetryData) {
+	parent.logDebug('Executing Omnilogic Pump parseStatus')
+	parent.logDebug(deviceStatus)
+
+  def pumpState = deviceStatus?.@pumpState?.text() ?: deviceStatus?.@filterState?.text()
+  def onOff = pumpState == '1' ? 'on' : 'off'
+  sendEvent(name: 'switch', value: onOff, displayed: true)
 }
 
 def on() {
@@ -79,7 +81,8 @@ def setPumpState(isOn) {
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(isOn)
+      def onOff = isOn ? 'on' : 'off'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
 }

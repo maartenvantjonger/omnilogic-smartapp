@@ -12,6 +12,7 @@ metadata {
     capability 'Switch'
     capability 'Actuator'
     capability 'Refresh'
+    capability 'Health Check'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
   }
@@ -39,20 +40,20 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic Light parseStatus')
-	parent.logDebug(statusXmlNode)
-
-  def lightState = statusXmlNode?.@lightState?.text()
-  def currentShow = statusXmlNode?.@currentShow?.text()
-  updateState(lightState == '1', currentShow)
+def ping() {
+	parent.logDebug('Executing Omnilogic Light ping')
+  refresh()
 }
 
-def updateState(on, show) {
-  def onOff = on ? 'on' : 'off'
-  sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+def parseStatus(deviceStatus, telemetryData) {
+	parent.logDebug('Executing Omnilogic Light parseStatus')
+	parent.logDebug(deviceStatus)
 
-  if (show != null) {
+  def onOff = deviceStatus?.@lightState?.text()  == '1' ? 'on' : 'off'
+  sendEvent(name: 'switch', value: onOff, displayed: true)
+
+  def currentShow = deviceStatus?.@currentShow?.text()
+  if (currentShow != null) {
     sendEvent(name: 'show', value: show, displayed: true)
   }
 }
@@ -84,29 +85,30 @@ def setLightState(isOn) {
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(isOn)
+      def onOff = isOn ? 'on' : 'off'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
 }
 
 /* TODO Add attributes
 colors = {
-    '1' : "Show-Voodoo Lounge",
-    '2' : "Fixed-Deep Blue Sea",
-    '3' : "Fixed-Royal Blue",
-    '4' : "Fixed-Afternoon Skies",
-    '5' : "Fixed-Aqua Green",
-    '6' : "Fixed-Emerald",
-    '7' : "Fixed-Cloud White",
-    '8' : "Fixed-Warm Red",
-    '9' : "Fixed-Flamingo",
-    '10' : "Fixed-Vivid Violet",
-    '11' : "Fixed-Sangria",
-    '12' : "Show-Twilight",
-    '13' : "Show-Tranquility",
-    '14' : "Show-Gemstone",
-    '15' : "Show-USA",
-    '16' : "Show-Mardi Gras",
-    '17' : "Show-Cool Cabaret"
+    '1' : 'Show-Voodoo Lounge',
+    '2' : 'Fixed-Deep Blue Sea',
+    '3' : 'Fixed-Royal Blue',
+    '4' : 'Fixed-Afternoon Skies',
+    '5' : 'Fixed-Aqua Green',
+    '6' : 'Fixed-Emerald',
+    '7' : 'Fixed-Cloud White',
+    '8' : 'Fixed-Warm Red',
+    '9' : 'Fixed-Flamingo',
+    '10' : 'Fixed-Vivid Violet',
+    '11' : 'Fixed-Sangria',
+    '12' : 'Show-Twilight',
+    '13' : 'Show-Tranquility',
+    '14' : 'Show-Gemstone',
+    '15' : 'Show-USA',
+    '16' : 'Show-Mardi Gras',
+    '17' : 'Show-Cool Cabaret'
 }
 */

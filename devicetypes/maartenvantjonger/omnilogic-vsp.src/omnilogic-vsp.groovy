@@ -13,6 +13,7 @@ metadata {
     capability 'Switch Level'
     capability 'Actuator'
     capability 'Refresh'
+    capability 'Health Check'
 
     if (getPlatform() == 'Hubitat') {
       capability 'Fan Control'
@@ -63,20 +64,26 @@ def refresh() {
   parent.updateDeviceStatuses()
 }
 
-def parseStatus(statusXmlNode) {
-	parent.logDebug('Executing Omnilogic VSP parseStatus')
-	parent.logDebug(statusXmlNode)
-
-  def filterSpeed = statusXmlNode?.@filterSpeed?.text().toInteger()
-  updateState(filterSpeed)
+def ping() {
+	parent.logDebug('Executing Omnilogic VSP ping')
+  refresh()
 }
 
-def updateState(speed) {
-	parent.logDebug('Executing Omnilogic VSP updateState')
+def parseStatus(deviceStatus, telemetryData) {
+	parent.logDebug('Executing Omnilogic VSP parseStatus')
+	parent.logDebug(deviceStatus)
 
-  def onOff = speed == 0 ? 'off' : 'on'
-  sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-  sendEvent(name: 'level', value: speed, displayed: true)
+  def onOff = deviceStatus?.@filterState?.text() == '1' ? 'on' : 'off'
+  sendEvent(name: 'switch', value: onOff, displayed: true)
+
+  def level = deviceStatus?.@filterSpeed?.text().toInteger()
+  sendEvent(name: 'level', value: level, displayed: true)
+
+  def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+  sendEvent(name: 'lastSpeed', value: lastSpeed, displayed: true)
+
+  def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
+  sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
 }
 
 def on() {
@@ -158,7 +165,9 @@ def setPumpSpeed(speed) {
   parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      updateState(speed)
+      def onOff = speed == 0 ? 'off' : 'on'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: speed, displayed: true, isStateChange: true)
     }
   }
 }

@@ -42,9 +42,11 @@ def updated() {
 
 def initialize() {
   logDebug('Executing initialize')
+}
 
-  // TODO Decide to keep or not
-  // runEvery15Minutes(updateDeviceStatuses)
+def poll() {
+  logDebug('Executing poll')
+  updateDeviceStatuses()
 }
 
 def logDebug(message) {
@@ -116,7 +118,7 @@ def devicePage() {
 
   // Get available devices from Omnilogic
   getAvailableDevices()
-  def availableDeviceNames = state.availableDevices.collectEntries { [it.key, it.value.name] }
+  def availableDeviceNames = state.availableDevices.collectEntries { [it.key, "${it.value.name} (${it.value.driverName})"] }
 
   return dynamicPage(name: 'devicePage', nextPage: 'deviceResultPage') {
     if (availableDeviceNames?.size() > 0) {
@@ -205,18 +207,15 @@ def getAvailableDevices() {
     def serializedResponse = groovy.xml.XmlUtil.serialize(response.MSPConfig)
     state.mspConfigFile = groovy.xml.XmlUtil.escapeXml(serializedResponse)
 
-
     // Parse available devices from MSP Config
-    response.MSPConfig.Backyard.each {
-      addTemperatureSensor(availableDevices, it)
-    }
+    response.MSPConfig.Backyard.each { addTemperatureSensor(availableDevices, it) }
 
     def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addPump(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
+    bowNodes.Heater.each { addHeater(availableDevices, it) }
     bowNodes.Chlorinator.each { addDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
-    bowNodes.Heater.each { addDevice(availableDevices, it, 'Heater', 'Omnilogic Heater') }
     bowNodes.Relay.each { addDevice(availableDevices, it, null, 'Omnilogic Relay') }
     bowNodes.'ColorLogic-Light'.each { addDevice(availableDevices, it, null, 'Omnilogic Light') }
 
@@ -224,8 +223,8 @@ def getAvailableDevices() {
   }
 }
 
-def addTemperatureSensor(availableDevices, deviceXmlNode) {
-  def omnilogicId = deviceXmlNode.'System-Id'.text()
+def addTemperatureSensor(availableDevices, deviceDefinition) {
+  def omnilogicId = deviceDefinition.'System-Id'.text()
   def bowId = omnilogicId
 
   // Use MSP ID for Backyard Air Temperature Sensor so we can update it using telemetry data
@@ -238,33 +237,50 @@ def addTemperatureSensor(availableDevices, deviceXmlNode) {
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: deviceXmlNode.Name.text(),
+    name: deviceDefinition.Name.text(),
     driverName: 'Omnilogic Temperature Sensor',
     attributes: [
       bowId: bowId,
-      sensorType: deviceXmlNode.Sensor.Type.text(),
-      unit: deviceXmlNode.Sensor.Units.text()
+      sensorType: deviceDefinition.Sensor.Type.text(),
+      temperatureUnit: deviceDefinition.Sensor.Units.text()
     ]
   ]
 }
 
-def addPump(availableDevices, deviceXmlNode) {
-  def type = deviceXmlNode.'Filter-Type'.text() ?: deviceXmlNode.'Type'.text()
+def addPump(availableDevices, deviceDefinition) {
+  def type = deviceDefinition.'Filter-Type'.text() ?: deviceDefinition.'Type'.text()
   def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
 
-  addDevice(availableDevices, deviceXmlNode, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
+  addDevice(availableDevices, deviceDefinition, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
 }
 
-def addDevice(availableDevices, deviceXmlNode, name, driverName) {
-  def omnilogicId = deviceXmlNode.'System-Id'.text()
+def addHeater(availableDevices, deviceDefinition) {
+  def omnilogicId = deviceDefinition.'System-Id'.text()
   def deviceId = getDeviceId(omnilogicId)
+  def bowDefinition = deviceDefinition.parent()
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: "${deviceXmlNode.parent().Name.text()} ${name ?: deviceXmlNode.Name.text()}",
+    name: "${bowDefinition.Name.text()} Heater",
+    driverName: 'Omnilogic Heater',
+    attributes: [
+      bowId: bowDefinition.'System-Id'.text()
+      temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
+    ]
+  ]
+}
+
+def addDevice(availableDevices, deviceDefinition, name, driverName) {
+  def omnilogicId = deviceDefinition.'System-Id'.text()
+  def deviceId = getDeviceId(omnilogicId)
+  def bowDefinition = deviceDefinition.parent()
+
+  availableDevices[deviceId] = [
+    omnilogicId: omnilogicId,
+    name: "${bowDefinition.Name.text()} ${name ?: deviceDefinition.Name.text()}",
     driverName: driverName,
     attributes: [
-      bowId: deviceXmlNode.parent().'System-Id'.text()
+      bowId: bowDefinition.'System-Id'.text()
     ]
   ]
 }
@@ -316,12 +332,10 @@ def updateDeviceStatuses() {
   logDebug('Executing updateDeviceStatuses')
 
   getTelemetryData { telemetryData ->
-    telemetryData.children().each { deviceStatus ->
-      def deviceId = getDeviceId(deviceStatus.@systemId?.text())
-      def childDevice = getChildDevice(deviceId)
-      if (childDevice != null) {
-        childDevice.parseStatus(deviceStatus)
-      }
+    childDevices.each { device -> {
+      def omnilogicId = device.currentValue('omnilogicId')
+      def deviceStatus = telemetryData.children().find { it.@systemId?.text() == omnilogicId }
+      device.parseStatus(deviceStatus, telemetryData)
     }
   }
 }
