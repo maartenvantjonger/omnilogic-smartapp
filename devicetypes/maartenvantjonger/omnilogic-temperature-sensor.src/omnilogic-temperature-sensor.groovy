@@ -69,7 +69,7 @@ def parseStatus(deviceStatus, telemetryData) {
   if (temperature > -1) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
     sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
-    sendEvent(name: 'lastTemperatureDate', value: new Date().format('yyyy-MM-dd'T'HH:mm:ss'), displayed: true)
+    sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
   } else if (!useLastTemperature) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
   }
