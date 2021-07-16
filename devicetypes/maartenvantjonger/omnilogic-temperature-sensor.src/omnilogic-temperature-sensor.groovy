@@ -63,10 +63,10 @@ def parseStatus(deviceStatus, telemetryData) {
 	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
 	parent.logDebug(deviceStatus)
 
-  def temperature = device.currentValue('sensorType') == 'water' ?
-    deviceStatus?.@waterTemp?.text() : deviceStatus?.@airTemp?.text()
+  def temperature = (device.currentValue('sensorType') == 'water' ?
+    deviceStatus?.@waterTemp?.text() : deviceStatus?.@airTemp?.text()) as Integer
 
-  if (temperature != null && temperature != '-1') {
+  if (temperature != null && temperature != -1) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
     sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
     sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
