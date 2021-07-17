@@ -18,6 +18,12 @@ metadata {
     capability 'Thermostat Mode'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
+    attribute 'lastTemperature', 'number'
+    attribute 'lastTemperatureDate', 'string'
+  }
+
+  preferences {
+    input(name: 'useLastTemperature', type: 'bool', title: 'Show last recorded actual temperature. Ignore -1 temperature updates.', defaultValue: true)
   }
 }
 
@@ -34,10 +40,6 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'temperature', value: 0, unit: temperatureUnit, displayed: true)
   sendEvent(name: 'heatingSetpoint', value: 0, unit: temperatureUnit, displayed: true)
   sendEvent(name: 'unit', value: temperatureUnit, displayed: true)
-
-  // TODO remove?
-  sendEvent(name: 'min', value: 50, unit: temperatureUnit, displayed: true)
-  sendEvent(name: 'max', value: 104, unit: temperatureUnit, displayed: true)
 }
 
 def refresh() {
@@ -63,8 +65,15 @@ def parseStatus(deviceStatus, telemetryData) {
 
   // Get current temperature from parent body of water
   def bowStatus = telemetryData.children().find { it.@systemId == device.currentValue('bowId') }
-  def temperature = bowStatus?.@waterTemp.text().toInteger()
-  sendEvent(name: 'temperature', value: heatingSetpoint, unit: device.currentValue('unit'), displayed: true)
+  def temperature = bowStatus?.@waterTemp.text()
+
+  if (temperature != null && temperature != '-1') {
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
+    sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
+    sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
+  } else if (settings.useLastTemperature == false) {
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
+  }
 }
 
 def setThermostatMode(thermostatMode) {
