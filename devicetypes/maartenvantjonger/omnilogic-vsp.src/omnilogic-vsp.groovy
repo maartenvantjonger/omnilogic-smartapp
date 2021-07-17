@@ -27,6 +27,7 @@ metadata {
     attribute 'valvePosition', 'number'
     attribute 'whyFilterIsOn', 'number'
     attribute 'fpOverride ', 'number'
+    attribute 'isSpillover', 'number'
   }
 
   tiles {
@@ -53,6 +54,7 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'level', value: 0, displayed: true)
+  sendEvent(name: 'isSpillover', value: attributes['isSpillover'], displayed: true)
 
   if (getPlatform() == 'Hubitat') {
     sendEvent(name: 'level', value: 0, displayed: true)
@@ -161,6 +163,38 @@ def setFanSpeed(speed) {
 }
 
 def setPumpSpeed(speed) {
+  if (getIsSpillover()) {
+    setSpilloverPumpSpeed(0)
+  } else {
+    setFilterPumpSpeed(0)
+  }
+}
+
+def setSpilloverPumpSpeed(speed) {
+  def parameters = [
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'Speed', dataType: 'int', value: speed],
+    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
+    [name: 'StartTimeHours', dataType: 'int', value: 0],
+    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
+    [name: 'EndTimeHours', dataType: 'int', value: 0],
+    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
+    [name: 'DaysActive', dataType: 'int', value: 0],
+    [name: 'Recurring', dataType: 'bool', value: false]
+  ]
+
+  parent.performApiRequest('SetUISpilloverCmd', parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
+      def onOff = speed == 0 ? 'off' : 'on'
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: speed, displayed: true, isStateChange: true)
+    }
+  }
+}
+
+def setFilterPumpSpeed(speed) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -183,6 +217,11 @@ def setPumpSpeed(speed) {
     }
   }
 }
+
+def getIsSpillover() {
+  return device.currentValue('isSpillover') == 1
+}
+
 
 def getPlatform() {
   physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
