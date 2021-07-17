@@ -178,7 +178,7 @@ def getTelemetryData(callback) {
     return
   }
 
-  performApiRequest('GetTelemetryData', parameters) { response ->
+  performApiRequest('RequestTelemetryData', parameters) { response ->
     if (response == null) {
       return
     }
