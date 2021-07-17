@@ -15,6 +15,8 @@ metadata {
     capability 'Health Check'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
+    attribute 'pumpState', 'number'
+    attribute 'pumpSpeed', 'number'
   }
 
   tiles {
@@ -52,6 +54,12 @@ def parseStatus(deviceStatus, telemetryData) {
   def pumpState = deviceStatus?.@pumpState?.text() ?: deviceStatus?.@filterState?.text()
   def onOff = pumpState == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
+
+  def pumpSpeed = deviceStatus?.@pumpSpeed?.text().toInteger()
+  sendEvent(name: 'pumpSpeed', value: pumpSpeed, displayed: true)
+
+  def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+  sendEvent(name: 'lastSpeed', value: lastSpeed, displayed: true)
 }
 
 def on() {
