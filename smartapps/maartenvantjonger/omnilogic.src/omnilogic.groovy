@@ -165,10 +165,6 @@ def telemetryPage() {
 }
 
 def getTelemetryData(callback) {
-  def parameters = [
-    [name: 'Version', value: 0]
-  ]
-
   // Cache telemetry data for 5 seconds
   if (state.telemetryTimestamp != null && state.telemetryTimestamp + 5000 > now()) {
     logDebug('Returning cached telemetry data')
@@ -178,7 +174,7 @@ def getTelemetryData(callback) {
     return
   }
 
-  performApiRequest('RequestTelemetryData', parameters) { response ->
+  performApiRequest('RequestTelemetryData', null) { response ->
     if (response == null) {
       return
     }
@@ -193,11 +189,7 @@ def getTelemetryData(callback) {
 }
 
 def getAvailableDevices() {
-  def parameters = [
-    [name: 'Version', value: 0]
-  ]
-
-  performApiRequest('RequestConfiguration', parameters) { response ->
+  performApiRequest('RequestConfiguration', null) { response ->
     if (response == null) {
       return
     }
@@ -393,6 +385,8 @@ def login(force, callback) {
 }
 
 def performApiRequest(name, parameters, callback) {
+  parameters = parameters ?: []
+
   // Perform login sequence for API requests other than Login itself,
   // to make sure we have a valid token
   if (name != 'Login') {
@@ -402,7 +396,7 @@ def performApiRequest(name, parameters, callback) {
       }
     }
 
-    parameters.add(0, [name: 'Token', dataType: 'int', value: state.session.token])
+    parameters.add(0, [name: 'Token', value: state.session.token])
     parameters.add(1, [name: 'MspSystemID', dataType: 'int', value: settings.mspId])
   }
 
@@ -415,7 +409,8 @@ def performApiRequest(name, parameters, callback) {
   httpPost([
     uri: 'https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx',
     contentType: 'text/xml',
-    body: requestXml
+    body: requestXml,
+    headers: ['Token': state.session.token],
   ]) { response ->
     logDebug("Omnilogic response: ${response.status}")
     logDebug(response.data)
@@ -430,7 +425,7 @@ def performApiRequest(name, parameters, callback) {
 
 def formatApiRequest(name, parameters) {
   def parameterXml = parameters?.collect {
-    "<Parameter name=\"${it.name}\" dataType=\"${it.dataType ?: 'string'}\">${it.value}</Parameter>\n"
+    "<Parameter name=\"${it.name}\" dataType=\"${it.dataType ?: 'String'}\">${it.value}</Parameter>\n"
   }.join().trim()
 
   return """
