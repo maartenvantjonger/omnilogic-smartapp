@@ -209,7 +209,7 @@ def getAvailableDevices() {
     bowNodes.Filter.each { addPump(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Heater.each { addHeater(availableDevices, it) }
-    bowNodes.Chlorinator.each { addDevice(availableDevices, it, null, 'Omnilogic Chlorinator') }
+    bowNodes.Chlorinator.each { addChlorinator(availableDevices, it) }
     bowNodes.Relay.each { addDevice(availableDevices, it, null, 'Omnilogic Relay') }
     bowNodes.'ColorLogic-Light'.each { addDevice(availableDevices, it, null, 'Omnilogic Light') }
 
@@ -244,39 +244,37 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
 def addPump(availableDevices, deviceDefinition) {
   def type = deviceDefinition.'Filter-Type'.text() ?: deviceDefinition.'Type'.text()
   def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
-
   addDevice(availableDevices, deviceDefinition, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
 }
 
 def addHeater(availableDevices, deviceDefinition) {
-  def omnilogicId = deviceDefinition.'System-Id'.text()
-  def deviceId = getDeviceId(omnilogicId)
-  def bowDefinition = deviceDefinition.parent()
-
-  availableDevices[deviceId] = [
-    omnilogicId: omnilogicId,
-    name: "${bowDefinition.Name.text()} Heater",
-    driverName: 'Omnilogic Heater',
-    attributes: [
-      bowId: bowDefinition.'System-Id'.text(),
-      temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
-    ]
-  ]
+  def attributes = [temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()]
+  addDevice(availableDevices, deviceDefinition, 'Heater', 'Omnilogic Heater', attributes)
 }
 
-def addDevice(availableDevices, deviceDefinition, name, driverName) {
+def addChlorinator(availableDevices, deviceDefinition) {
+  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 0])
+  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1])
+}
+
+def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
   def omnilogicId = deviceDefinition.'System-Id'.text()
   def deviceId = getDeviceId(omnilogicId)
   def bowDefinition = deviceDefinition.parent()
+
+  attributes = attributes ?: []
+  attributes.bowId = bowDefinition.'System-Id'.text()
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
     name: "${bowDefinition.Name.text()} ${name ?: deviceDefinition.Name.text()}",
     driverName: driverName,
-    attributes: [
-      bowId: bowDefinition.'System-Id'.text()
-    ]
+    attributes: attributes
   ]
+
+  if (attributes != null) {
+    availableDevices[deviceId].attributes.putAll(attributes)
+  }
 }
 
 def getDeviceId(omnilogicId) {

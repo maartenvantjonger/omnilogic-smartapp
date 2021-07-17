@@ -25,6 +25,7 @@ metadata {
     attribute 'avgSaltLevel', 'number'
     attribute 'chlrAlert', 'number'
     attribute 'chlrError', 'number'
+    attribute 'isSuperChlorinator', 'number'
   }
 
   tiles {
@@ -47,7 +48,11 @@ def initialize(omnilogicId, attributes) {
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
-  sendEvent(name: 'level', value: 0, displayed: true)
+  sendEvent(name: 'isSuperChlorinator', value: attributes['isSuperChlorinator'], displayed: true)
+
+  if (!getIsSuperChlorinator()) {
+    sendEvent(name: 'level', value: 0, displayed: true)
+  }
 }
 
 def refresh() {
@@ -64,11 +69,14 @@ def parseStatus(deviceStatus, telemetryData) {
 	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
 	parent.logDebug(deviceStatus)
 
-  def onOff = deviceStatus.@enable.text() == '1' ? 'on' : 'off'
+  def enabled = getIsSuperChlorinator() ? deviceStatus.@scMode.text() : deviceStatus.@enable.text()
+  def onOff = enabled == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
 
-  def level = deviceStatus['@Timed-Percent'].text()
-  sendEvent(name: 'level', value: level, displayed: true)
+  if (!getIsSuperChlorinator()) {
+    def level = deviceStatus['@Timed-Percent'].text()
+    sendEvent(name: 'level', value: level, displayed: true)
+  }
 
   def operatingState = deviceStatus.@operatingState.text()
   sendEvent(name: 'operatingState', value: operatingState, displayed: true)
@@ -78,6 +86,9 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def status = deviceStatus.@status.text()
   sendEvent(name: 'status', value: status, displayed: true)
+
+  def enable = deviceStatus.@enable.text()
+  sendEvent(name: 'enable', value: enable, displayed: true)
 
   def scMode = deviceStatus.@scMode.text()
   sendEvent(name: 'scMode', value: scMode, displayed: true)
@@ -97,12 +108,22 @@ def parseStatus(deviceStatus, telemetryData) {
 
 def on() {
   parent.logDebug('Executing on')
-  enableChlorinator(true)
+
+  if (getIsSuperChlorinator()) {
+    enableSuperChlorinator(true)
+  } else {
+    enableChlorinator(true)
+  }
 }
 
 def off() {
 	parent.logDebug('Executing off')
-  enableChlorinator(false)
+
+  if (getIsSuperChlorinator()) {
+    enableSuperChlorinator(false)
+  } else {
+    enableChlorinator(false)
+  }
 }
 
 def setLevel(level) {
@@ -111,6 +132,8 @@ def setLevel(level) {
 }
 
 def enableChlorinator(enable) {
+  parent.logDebug("Executing enableChlorinator ${enable}")
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -127,6 +150,8 @@ def enableChlorinator(enable) {
 }
 
 def enableSuperChlorinator(enable) {
+  parent.logDebug("Executing enableSuperChlorinator ${enable}")
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -141,4 +166,8 @@ def enableSuperChlorinator(enable) {
       //sendEvent(name: 'level', value: 150, displayed: true, isStateChange: true)
     }
   }
+}
+
+def getIsSuperChlorinator() {
+  return device.currentValue('isSuperChlorinator') == 1
 }
