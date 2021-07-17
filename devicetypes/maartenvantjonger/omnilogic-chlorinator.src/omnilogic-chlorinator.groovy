@@ -86,39 +86,31 @@ def parseStatus(deviceStatus, telemetryData) {
 
 def on() {
   parent.logDebug('Executing on')
-  setLevel(100)
+  enableChlorinator(true)
 }
 
 def off() {
 	parent.logDebug('Executing off')
-  setLevel(0)
+  enableChlorinator(false)
 }
 
 def setLevel(level) {
   parent.logDebug('Executing setLevel')
-  setChlorinatorLevel(level)
+  enableChlorinator(true)
 }
 
-def setChlorinatorLevel(level) {
+def enableChlorinator(enable) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
-    [name: 'IsOn', dataType: 'int', value: level],
-    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
-    [name: 'StartTimeHours', dataType: 'int', value: 0],
-    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
-    [name: 'EndTimeHours', dataType: 'int', value: 0],
-    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
-    [name: 'DaysActive', dataType: 'int', value: 0],
-    [name: 'Recurring', dataType: 'bool', value: false]
+    [name: 'Enabled', dataType: 'bool', value: enable]
   ]
-
   parent.performApiRequest('SetCHLOREnable', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      def onOff = level != 0 ? 'on' : 'off'
+      def onOff = enable != 0 ? 'on' : 'off'
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-      sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
+      //sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
     }
   }
 }
@@ -127,22 +119,15 @@ def enableSuperChlorinator(enable) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
-    [name: 'IsOn', dataType: 'int', value: enable ? 100 : 0],
-    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
-    [name: 'StartTimeHours', dataType: 'int', value: 0],
-    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
-    [name: 'EndTimeHours', dataType: 'int', value: 0],
-    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
-    [name: 'DaysActive', dataType: 'int', value: 0],
-    [name: 'Recurring', dataType: 'bool', value: false]
+    [name: 'Enabled', dataType: 'bool', value: enable]
   ]
 
   parent.performApiRequest('SetUISuperCHLORCmd', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
       def onOff = enable ? 'on' : 'off'
-      sendEvent(name: 'switch', value: 'on', displayed: true, isStateChange: true)
-      sendEvent(name: 'level', value: 150, displayed: true, isStateChange: true)
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+      //sendEvent(name: 'level', value: 150, displayed: true, isStateChange: true)
     }
   }
 }
