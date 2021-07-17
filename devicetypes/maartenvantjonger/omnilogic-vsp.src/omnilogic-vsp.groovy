@@ -23,6 +23,10 @@ metadata {
 
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
+    attribute 'lastSpeed', 'number'
+    attribute 'valvePosition', 'number'
+    attribute 'whyFilterIsOn', 'number'
+    attribute 'fpOverride ', 'number'
   }
 
   tiles {
@@ -84,6 +88,12 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
   sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
+
+  def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
+  sendEvent(name: 'whyFilterIsOn', value: whyFilterIsOn, displayed: true)
+
+  def fpOverride = deviceStatus?.@fpOverride?.text().toInteger()
+  sendEvent(name: 'fpOverride', value: fpOverride, displayed: true)
 }
 
 def on() {
