@@ -17,6 +17,14 @@ metadata {
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'level', 'number'
+    attribute 'operatingState', 'number'
+    attribute 'operatingMode', 'number'
+    attribute 'status', 'number'
+    attribute 'scMode', 'number'
+    attribute 'instantSaltLevel', 'number'
+    attribute 'avgSaltLevel', 'number'
+    attribute 'chlrAlert', 'number'
+    attribute 'chlrError', 'number'
   }
 
   tiles {
@@ -56,11 +64,17 @@ def parseStatus(deviceStatus, telemetryData) {
 	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
 	parent.logDebug(deviceStatus)
 
-  def onOff = deviceStatus.@status.text() != '0' ? 'on' : 'off'
+  def onOff = deviceStatus.@enable.text() == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
 
   def level = deviceStatus['@Timed-Percent'].text()
   sendEvent(name: 'level', value: level, displayed: true)
+
+  def operatingState = deviceStatus.@operatingState.text()
+  sendEvent(name: 'operatingState', value: operatingState, displayed: true)
+
+  def operatingMode = deviceStatus.@operatingMode.text()
+  sendEvent(name: 'operatingMode', value: operatingMode, displayed: true)
 
   def status = deviceStatus.@status.text()
   sendEvent(name: 'status', value: status, displayed: true)
@@ -79,9 +93,6 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def chlrError = deviceStatus.@chlrError.text()
   sendEvent(name: 'chlrError', value: chlrError, displayed: true)
-
-  def operatingMode = deviceStatus.@operatingMode.text()
-  sendEvent(name: 'operatingMode', value: operatingMode, displayed: true)
 }
 
 def on() {
