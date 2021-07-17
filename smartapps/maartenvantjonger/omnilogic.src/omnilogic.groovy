@@ -244,7 +244,11 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
 def addPump(availableDevices, deviceDefinition) {
   def type = deviceDefinition.'Filter-Type'.text() ?: deviceDefinition.'Type'.text()
   def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
-  addDevice(availableDevices, deviceDefinition, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
+  addDevice(availableDevices, deviceDefinition, 'Filter', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
+
+  if (deviceDefinition.parent().'Supports-Spillover' == 'yes') {
+    addDevice(availableDevices, deviceDefinition, 'Spillover', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump')
+  }
 }
 
 def addHeater(availableDevices, deviceDefinition) {
