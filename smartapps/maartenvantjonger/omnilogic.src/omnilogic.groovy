@@ -197,22 +197,22 @@ def getAvailableDevices() {
     [name: 'Version', value: 0]
   ]
 
-  performApiRequest('GetMspConfigFile', parameters) { response ->
+  performApiRequest('RequestConfiguration', parameters) { response ->
     if (response == null) {
       return
     }
 
     def availableDevices = [:]
 
-    def serializedResponse = groovy.xml.XmlUtil.serialize(response.MSPConfig)
-    state.mspConfigFile = getPlatform() == 'Hubitat'
+    def serializedResponse = groovy.xml.XmlUtil.serialize(response)
+    state.mspConfig = getPlatform() == 'Hubitat'
       ? groovy.xml.XmlUtil.escapeXml(serializedResponse)
       : serializedResponse
 
     // Parse available devices from MSP Config
-    response.MSPConfig.Backyard.each { addTemperatureSensor(availableDevices, it) }
+    response.Backyard.each { addTemperatureSensor(availableDevices, it) }
 
-    def bowNodes = response.MSPConfig.Backyard.'Body-of-water'
+    def bowNodes = response.Backyard.'Body-of-water'
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addPump(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
@@ -402,7 +402,8 @@ def performApiRequest(name, parameters, callback) {
       }
     }
 
-    parameters.add(0, [name: 'MspSystemID', dataType: 'int', value: settings.mspId])
+    parameters.add(0, [name: 'Token', dataType: 'int', value: state.session.token])
+    parameters.add(1, [name: 'MspSystemID', dataType: 'int', value: settings.mspId])
   }
 
   // Perform API request
@@ -412,9 +413,8 @@ def performApiRequest(name, parameters, callback) {
   logDebug(requestXml)
 
   httpPost([
-    uri: 'https://www.haywardomnilogic.com/HAAPI/HomeAutomation/API.ashx',
+    uri: 'https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx',
     contentType: 'text/xml',
-    headers: ['Token': state.session.token],
     body: requestXml
   ]) { response ->
     logDebug("Omnilogic response: ${response.status}")
