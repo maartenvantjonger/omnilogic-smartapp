@@ -227,7 +227,7 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
     bowId = null
   }
 
-  def deviceId = getDeviceId(omnilogicId)
+  def deviceId = getDeviceId(omnilogicId, null)
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
@@ -247,7 +247,7 @@ def addPump(availableDevices, deviceDefinition) {
   addDevice(availableDevices, deviceDefinition, 'Filter', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump', [isSpillover: 0])
 
   if (deviceDefinition.parent().'Supports-Spillover' == 'yes') {
-    addDevice(availableDevices, deviceDefinition, 'Spillover', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump', [isSpillover: 1])
+    addDevice(availableDevices, deviceDefinition, 'Spillover', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump', [isSpillover: 1, deviceIdSuffix: 's'])
   }
 }
 
@@ -258,12 +258,12 @@ def addHeater(availableDevices, deviceDefinition) {
 
 def addChlorinator(availableDevices, deviceDefinition) {
   addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 0])
-  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1])
+  addDevice(availableDevices, deviceDefinition, 'Super Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1, deviceIdSuffix: 's'])
 }
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
   def omnilogicId = deviceDefinition.'System-Id'.text()
-  def deviceId = getDeviceId(omnilogicId)
+  def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
   def bowDefinition = deviceDefinition.parent()
 
   attributes = attributes ?: []
@@ -281,14 +281,15 @@ def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) 
   }
 }
 
-def getDeviceId(omnilogicId) {
-  return "omnilogic-${omnilogicId}"
+def getDeviceId(omnilogicId, deviceIdSuffix) {
+  deviceIdSuffix = deviceIdSuffix ?: ''
+  return "omnilogic-${omnilogicId}${deviceIdSuffix}"
 }
 
 def createDevice(omnilogicId, name, driverName, attributes) {
   logDebug("Executing createDevice for ${name}")
 
-  def deviceId = getDeviceId(omnilogicId)
+  def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
   def childDevice = getChildDevice(deviceId)
 
   if (childDevice == null) {
