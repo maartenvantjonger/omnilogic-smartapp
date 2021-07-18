@@ -243,7 +243,7 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
 
 def addFilter(availableDevices, deviceDefinition) {
   def driverName = deviceDefinition.'Filter-Type'.text() == 'FMT_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
-  addDevice(availableDevices, deviceDefinition, 'Filter', driverName)
+  addDevice(availableDevices, deviceDefinition, 'Filter', driverName, null)
 
   if (deviceDefinition.parent().'Supports-Spillover' == 'yes') {
     addDevice(availableDevices, deviceDefinition, 'Spillover', driverName, [isSpillover: 1, deviceIdSuffix: 's'])
@@ -252,7 +252,7 @@ def addFilter(availableDevices, deviceDefinition) {
 
 def addPump(availableDevices, deviceDefinition) {
   def driverName = deviceDefinition.'Type'.text() == 'PMP_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
-  addDevice(availableDevices, deviceDefinition, null, driverName)
+  addDevice(availableDevices, deviceDefinition, null, driverName, null)
 }
 
 def addHeater(availableDevices, deviceDefinition) {
@@ -261,7 +261,7 @@ def addHeater(availableDevices, deviceDefinition) {
 }
 
 def addChlorinator(availableDevices, deviceDefinition) {
-  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator')
+  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', null)
   addDevice(availableDevices, deviceDefinition, 'Super Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1, deviceIdSuffix: 's'])
 }
 
