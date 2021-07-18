@@ -73,7 +73,10 @@ def parseStatus(deviceStatus, telemetryData) {
   def onOff = enabled == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
 
-  if (!getIsSuperChlorinator()) {
+  if (getIsSuperChlorinator()) {
+    def level = enabled == '1' ? 100 : 0
+    sendEvent(name: 'level', value: level, displayed: true)
+  } else {
     def level = deviceStatus['@Timed-Percent'].text()
     sendEvent(name: 'level', value: level, displayed: true)
   }
@@ -142,9 +145,10 @@ def enableChlorinator(enable) {
   parent.performApiRequest('SetCHLOREnable', parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
-      def onOff = enable != 0 ? 'on' : 'off'
+      def onOff = enable ? 'on' : 'off'
+      def level = enable ? 100 : 0
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-      //sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
     }
   }
 }
@@ -162,8 +166,9 @@ def enableSuperChlorinator(enable) {
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
       def onOff = enable ? 'on' : 'off'
+      def level = enable ? 100 : 0
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-      //sendEvent(name: 'level', value: 150, displayed: true, isStateChange: true)
+      sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
     }
   }
 }
