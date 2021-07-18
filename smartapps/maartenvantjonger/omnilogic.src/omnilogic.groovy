@@ -267,7 +267,7 @@ def addChlorinator(availableDevices, deviceDefinition) {
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
   def omnilogicId = deviceDefinition.'System-Id'.text()
-  def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
+  def deviceId = getDeviceId(omnilogicId, attributes?.deviceIdSuffix)
   def bowDefinition = deviceDefinition.parent()
 
   attributes = attributes ?: []
@@ -293,7 +293,7 @@ def getDeviceId(omnilogicId, deviceIdSuffix) {
 def createDevice(omnilogicId, name, driverName, attributes) {
   logDebug("Executing createDevice for ${name}")
 
-  def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
+  def deviceId = getDeviceId(omnilogicId, attributes?.deviceIdSuffix)
   def childDevice = getChildDevice(deviceId)
 
   if (childDevice == null) {
