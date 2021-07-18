@@ -165,9 +165,9 @@ def setFanSpeed(speed) {
 
 def setPumpSpeed(speed) {
   if (getIsSpillover()) {
-    setSpilloverPumpSpeed(0)
+    setSpilloverPumpSpeed(speed)
   } else {
-    setFilterPumpSpeed(0)
+    setFilterPumpSpeed(speed)
   }
 }
 
