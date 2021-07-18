@@ -131,7 +131,8 @@ def off() {
 
 def setLevel(level) {
   parent.logDebug('Executing setLevel')
-  enableChlorinator(true)
+
+  setChlorinatorLevel(level)
 }
 
 def enableChlorinator(enable) {
@@ -146,7 +147,29 @@ def enableChlorinator(enable) {
     def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
     if (success) {
       def onOff = enable ? 'on' : 'off'
-      def level = enable ? 100 : 0
+      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
+    }
+  }
+}
+
+def setChlorinatorLevel(level) {
+  parent.logDebug("Executing setChlorinatorLevel ${level}")
+
+  def parameters = [
+    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
+    [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
+    [name: 'CfgState', dataType: 'byte', value: 3],
+    [name: 'OpMode', dataType: 'byte', value: 1],
+    [name: 'BOWType', dataType: 'byte', value: 1],
+    [name: 'CellType', dataType: 'byte', value: 3],
+    [name: 'TimedPercent', dataType: 'byte', value: level],
+    [name: 'SCTimeout', dataType: 'byte', value: 24],
+    [name: 'ORPTimout', dataType: 'byte', value: 24]
+  ]
+  parent.performApiRequest('SetCHLORParams', parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+    if (success) {
+      def onOff = enable ? 'on' : 'off'
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
       sendEvent(name: 'level', value: level, displayed: true, isStateChange: true)
     }
