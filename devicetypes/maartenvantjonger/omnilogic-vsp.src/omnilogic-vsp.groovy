@@ -79,7 +79,11 @@ def parseStatus(deviceStatus, telemetryData) {
 	parent.logDebug('Executing Omnilogic VSP parseStatus')
 	parent.logDebug(deviceStatus)
 
-  def onOff = deviceStatus?.@filterState?.text() == '1' ? 'on' : 'off'
+  def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
+  sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
+
+  def enabled = deviceStatus?.@filterState?.text() == '1' && (!getIsSpillover() || valvePosition == 3)
+  def onOff = enabled ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
 
   def level = deviceStatus?.@filterSpeed?.text().toInteger()
@@ -87,9 +91,6 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
   sendEvent(name: 'lastSpeed', value: lastSpeed, displayed: true)
-
-  def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
-  sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
 
   def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
   sendEvent(name: 'whyFilterIsOn', value: whyFilterIsOn, displayed: true)
