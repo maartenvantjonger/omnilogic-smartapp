@@ -251,7 +251,13 @@ def addPump(availableDevices, deviceDefinition) {
 }
 
 def addHeater(availableDevices, deviceDefinition) {
-  def attributes = [temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()]
+  def attributes = [
+    omnilogicHeaterId: deviceDefinition.Operation.find { it.name() == 'Heater-Equipment' }.'System-Id'.text()
+    minTemperature: deviceDefinition.'Min-Settable-Water-Temp'.text().toInteger(),
+    maxTemperature: deviceDefinition.'Max-Settable-Water-Temp'.text().toInteger(),
+    temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
+  ]
+
   addDevice(availableDevices, deviceDefinition, 'Heater', 'Omnilogic Heater', attributes)
 }
 

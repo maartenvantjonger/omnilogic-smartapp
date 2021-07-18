@@ -15,10 +15,11 @@ metadata {
     capability 'Health Check'
     capability 'Polling'
     capability 'Temperature Measurement'
-    capability 'Thermostat Heating Setpoint'
+    capability 'Thermostat'
     capability 'Thermostat Mode'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
+    attribute 'omnilogicHeaterId', 'number'
     attribute 'lastTemperature', 'number'
     attribute 'lastTemperatureDate', 'string'
   }
@@ -31,15 +32,18 @@ metadata {
 def initialize(omnilogicId, attributes) {
 	parent.logDebug('Executing Omnilogic Heater initialize')
 
-  def temperatureUnit = attributes['temperatureUnit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
+  def temperatureUnit = attributes.temperatureUnit == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
+  sendEvent(name: 'omnilogicHeaterId', value: attributes.omnilogicHeaterId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
+  sendEvent(name: 'supportedThermostatFanModes', value: [], displayed: true)
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
   sendEvent(name: 'switch', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, unit: temperatureUnit, displayed: true)
   sendEvent(name: 'heatingSetpoint', value: 0, unit: temperatureUnit, displayed: true)
+  sendEvent(name: 'thermostatSetpointRange', value: [attributes.minTemperature, attributes.maxTemperature], unit: temperatureUnit, displayed: true)
   sendEvent(name: 'unit', value: temperatureUnit, displayed: true)
 }
 
@@ -74,12 +78,17 @@ def parseStatus(deviceStatus, telemetryData) {
   def temperature = bowStatus?.@waterTemp.text()
 
   if (temperature != null && temperature != '-1') {
-    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
     sendEvent(name: 'lastTemperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
     sendEvent(name: 'lastTemperatureDate', value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
   } else if (settings.useLastTemperature == false) {
-    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
+    sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true)
   }
+
+  // Get current heater operating state
+  def heaterStatus = telemetryData.children().find { it.@systemId == device.currentValue('omnilogicHeaterId') }
+  def thermostatOperatingState = heaterStatus.@heaterState.text() == '1' ? 'heating' : 'idle'
+  sendEvent(name: 'thermostatOperatingState', value: thermostatOperatingState, displayed: true, isStatusChange: true)
 }
 
 def setThermostatMode(thermostatMode) {
