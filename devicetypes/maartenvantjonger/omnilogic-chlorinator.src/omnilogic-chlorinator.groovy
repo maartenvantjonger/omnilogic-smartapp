@@ -155,7 +155,7 @@ def enableSuperChlorinator(enable) {
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'ChlorID', dataType: 'int', value: device.currentValue('omnilogicId')],
-    [name: 'Enabled', dataType: 'bool', value: enable]
+    [name: 'IsOn', dataType: 'bool', value: enable]
   ]
 
   parent.performApiRequest('SetUISuperCHLORCmd', parameters) { response ->
