@@ -206,7 +206,7 @@ def getAvailableDevices() {
 
     def bowNodes = response.Backyard.'Body-of-water'
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
-    bowNodes.Filter.each { addPump(availableDevices, it) }
+    bowNodes.Filter.each { addFilter(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Heater.each { addHeater(availableDevices, it) }
     bowNodes.Chlorinator.each { addChlorinator(availableDevices, it) }
@@ -241,14 +241,18 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
   ]
 }
 
-def addPump(availableDevices, deviceDefinition) {
-  def type = deviceDefinition.'Filter-Type'.text() ?: deviceDefinition.'Type'.text()
-  def isVsp = type == 'FMT_VARIABLE_SPEED_PUMP' || type == 'PMP_VARIABLE_SPEED_PUMP'
-  addDevice(availableDevices, deviceDefinition, null, isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump', [isSpillover: 0])
+def addFilter(availableDevices, deviceDefinition) {
+  def driverName = deviceDefinition.'Filter-Type'.text() == 'FMT_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
+  addDevice(availableDevices, deviceDefinition, 'Filter', driverName)
 
   if (deviceDefinition.parent().'Supports-Spillover' == 'yes') {
-    addDevice(availableDevices, deviceDefinition, 'Spillover', isVsp ? 'Omnilogic VSP' : 'Omnilogic Pump', [isSpillover: 1, deviceIdSuffix: 's'])
+    addDevice(availableDevices, deviceDefinition, 'Spillover', driverName, [isSpillover: 1, deviceIdSuffix: 's'])
   }
+}
+
+def addPump(availableDevices, deviceDefinition) {
+  def driverName = deviceDefinition.'Type'.text() == 'PMP_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
+  addDevice(availableDevices, deviceDefinition, null, driverName)
 }
 
 def addHeater(availableDevices, deviceDefinition) {
@@ -257,7 +261,7 @@ def addHeater(availableDevices, deviceDefinition) {
 }
 
 def addChlorinator(availableDevices, deviceDefinition) {
-  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 0])
+  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator')
   addDevice(availableDevices, deviceDefinition, 'Super Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1, deviceIdSuffix: 's'])
 }
 
