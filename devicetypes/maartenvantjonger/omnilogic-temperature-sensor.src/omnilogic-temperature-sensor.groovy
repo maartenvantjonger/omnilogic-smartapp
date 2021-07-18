@@ -12,6 +12,7 @@ metadata {
     capability 'Sensor'
     capability 'Refresh'
     capability 'Health Check'
+    capability 'Polling'
     capability 'Temperature Measurement'
     attribute 'omnilogicId', 'string'
     attribute 'lastTemperature', 'number'
@@ -56,6 +57,11 @@ def refresh() {
 
 def ping() {
 	parent.logDebug('Executing Omnilogic Temperature Sensor ping')
+  refresh()
+}
+
+def poll() {
+  logDebug('Executing Omnilogic Temperature Sensor poll')
   refresh()
 }
 

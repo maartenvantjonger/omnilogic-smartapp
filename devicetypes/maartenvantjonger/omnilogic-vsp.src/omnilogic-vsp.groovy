@@ -14,6 +14,7 @@ metadata {
     capability 'Actuator'
     capability 'Refresh'
     capability 'Health Check'
+    capability 'Polling'
 
     if (getPlatform() == 'Hubitat') {
       capability 'Fan Control'
@@ -72,6 +73,11 @@ def refresh() {
 
 def ping() {
 	parent.logDebug('Executing Omnilogic VSP ping')
+  refresh()
+}
+
+def poll() {
+  logDebug('Executing Omnilogic VSP poll')
   refresh()
 }
 

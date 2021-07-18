@@ -13,6 +13,7 @@ metadata {
     capability 'Actuator'
     capability 'Refresh'
     capability 'Health Check'
+    capability 'Polling'
     capability 'Temperature Measurement'
     capability 'Thermostat Heating Setpoint'
     capability 'Thermostat Mode'
@@ -49,6 +50,11 @@ def refresh() {
 
 def ping() {
 	parent.logDebug('Executing Omnilogic Heater ping')
+  refresh()
+}
+
+def poll() {
+  logDebug('Executing Omnilogic Heater poll')
   refresh()
 }
 

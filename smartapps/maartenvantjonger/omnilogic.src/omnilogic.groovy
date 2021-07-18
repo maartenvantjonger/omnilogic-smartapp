@@ -44,11 +44,6 @@ def initialize() {
   logDebug('Executing initialize')
 }
 
-def poll() {
-  logDebug('Executing poll')
-  updateDeviceStatuses()
-}
-
 def logDebug(message) {
   if (!enableLogging || message == null) {
     return

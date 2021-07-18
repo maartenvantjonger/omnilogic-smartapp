@@ -13,6 +13,7 @@ metadata {
     capability 'Actuator'
     capability 'Refresh'
     capability 'Health Check'
+    capability 'Polling'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'pumpState', 'number'
@@ -44,6 +45,11 @@ def refresh() {
 
 def ping() {
 	parent.logDebug('Executing Omnilogic Pump ping')
+  refresh()
+}
+
+def poll() {
+  logDebug('Executing Omnilogic Pump poll')
   refresh()
 }
 
