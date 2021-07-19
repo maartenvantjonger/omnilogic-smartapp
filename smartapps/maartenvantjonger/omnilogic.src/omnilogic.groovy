@@ -217,11 +217,7 @@ def getAvailableDevices() {
     }
 
     def availableDevices = [:]
-
-    def serializedResponse = groovy.xml.XmlUtil.serialize(response)
-    state.mspConfig = getPlatform() == 'Hubitat'
-      ? groovy.xml.XmlUtil.escapeXml(serializedResponse)
-      : serializedResponse
+    state.mspConfig = groovy.xml.XmlUtil.serialize(response)
 
     // Parse available devices from MSP Config
     response.Backyard.each { addTemperatureSensor(availableDevices, it) }
