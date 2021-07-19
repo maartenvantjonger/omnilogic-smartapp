@@ -10,13 +10,14 @@ metadata {
     author: 'Maarten van Tjonger'
   ) {
     capability 'Sensor'
+    capability 'Switch'
     capability 'Actuator'
     capability 'Refresh'
     capability 'Health Check'
     capability 'Polling'
-    capability 'Temperature Measurement'
     capability 'Thermostat'
     capability 'Thermostat Mode'
+    capability 'Temperature Measurement'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
     attribute 'omnilogicHeaterId', 'number'
@@ -100,6 +101,11 @@ def heat() {
   enableHeater(true)
 }
 
+def on() {
+	logMethod('on')
+  enableHeater(true)
+}
+
 def off() {
 	logMethod('off')
   enableHeater(false)
@@ -138,6 +144,10 @@ def setHeatingSetpoint(temperature) {
       sendEvent(name: 'heatingSetpoint', value: temperature, unit: device.currentValue('unit'), displayed: true, isStateChange: true)
     }
   }
+}
+
+def getPlatform() {
+  physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
 }
 
 def logMethod(method, message = null, arguments = null) {
