@@ -50,7 +50,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-  parent.logMethod(device.getName(), 'initialize', 'Arguments', [omnilogicId, attributes])
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
