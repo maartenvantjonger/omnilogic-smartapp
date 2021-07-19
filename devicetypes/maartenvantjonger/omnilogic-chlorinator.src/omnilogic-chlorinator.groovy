@@ -45,7 +45,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Chlorinator initialize')
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
@@ -57,23 +57,22 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Chlorinator refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Chlorinator ping')
+	logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Chlorinator poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Chlorinator parseStatus')
-	parent.logDebug(deviceStatus)
+	logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def enabled = getIsSuperChlorinator() ? deviceStatus.@scMode.text() : deviceStatus.@enable.text()
   def onOff = enabled == '1' ? 'on' : 'off'
@@ -116,7 +115,7 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-  parent.logDebug('Executing on')
+	logMethod('on')
 
   if (getIsSuperChlorinator()) {
     enableSuperChlorinator(true)
@@ -126,7 +125,7 @@ def on() {
 }
 
 def off() {
-	parent.logDebug('Executing off')
+	logMethod('off')
 
   if (getIsSuperChlorinator()) {
     enableSuperChlorinator(false)
@@ -136,13 +135,12 @@ def off() {
 }
 
 def setLevel(level) {
-  parent.logDebug('Executing setLevel')
-
+	logMethod('setLevel', 'Arguments', [level])
   setChlorinatorLevel(level)
 }
 
 def enableChlorinator(enable) {
-  parent.logDebug("Executing enableChlorinator ${enable}")
+	logMethod('enableChlorinator', 'Arguments', [enable])
 
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
@@ -159,7 +157,7 @@ def enableChlorinator(enable) {
 }
 
 def setChlorinatorLevel(level) {
-  parent.logDebug("Executing setChlorinatorLevel ${level}")
+	logMethod('setChlorinatorLevel', 'Arguments', [level])
 
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
@@ -183,7 +181,7 @@ def setChlorinatorLevel(level) {
 }
 
 def enableSuperChlorinator(enable) {
-  parent.logDebug("Executing enableSuperChlorinator ${enable}")
+	logMethod('enableSuperChlorinator', 'Arguments', [enable])
 
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
@@ -204,4 +202,8 @@ def enableSuperChlorinator(enable) {
 
 def getIsSuperChlorinator() {
   return device.currentValue('isSuperChlorinator') == 1
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }

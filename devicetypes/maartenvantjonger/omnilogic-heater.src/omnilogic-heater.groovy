@@ -30,7 +30,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Heater initialize')
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
 
   def temperatureUnit = attributes.temperatureUnit == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
 
@@ -48,23 +48,22 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Heater refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Heater ping')
+	logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Heater poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Heater parseStatus')
-	parent.logDebug(deviceStatus)
+	logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def enabled = deviceStatus.@enable.text() == 'yes'
   sendEvent(name: 'switch', value: enabled ? 'on' : 'off', displayed: true)
@@ -92,21 +91,23 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def setThermostatMode(thermostatMode) {
-  parent.logDebug("Executing Omnilogic Heater setThermostatMode ${thermostatMode}")
+	logMethod('setThermostatMode', 'Arguments', [thermostatMode])
   enableHeater(thermostatMode == 'heat')
 }
 
 def heat() {
-  parent.logDebug('Executing Omnilogic Heater heat')
+	logMethod('heat')
   enableHeater(true)
 }
 
 def off() {
-	parent.logDebug('Executing Omnilogic Heater off')
+	logMethod('off')
   enableHeater(false)
 }
 
 def enableHeater(enable) {
+	logMethod('enableHeater', 'Arguments', [enable])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'HeaterID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -123,7 +124,7 @@ def enableHeater(enable) {
 }
 
 def setHeatingSetpoint(temperature) {
-  parent.logDebug("Executing Omnilogic Heater setHeatingSetpoint ${temperature}")
+	logMethod('setHeatingSetpoint', 'Arguments', [temperature])
 
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
@@ -137,4 +138,8 @@ def setHeatingSetpoint(temperature) {
       sendEvent(name: 'heatingSetpoint', value: temperature, unit: device.currentValue('unit'), displayed: true, isStateChange: true)
     }
   }
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }

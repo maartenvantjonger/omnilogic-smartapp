@@ -38,7 +38,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Temperature Sensor initialize')
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
 
   def sensorType = attributes['sensorType'] == 'SENSOR_WATER_TEMP' ? 'water' : 'air'
   def temperatureUnit = attributes['temperatureUnit'] == 'UNITS_FAHRENHEIT' ? 'F' : 'C'
@@ -51,23 +51,22 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Temperature Sensor refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Temperature Sensor ping')
+	logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Temperature Sensor poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Temperature Sensor parseStatus')
-	parent.logDebug(deviceStatus)
+	logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def temperature = device.currentValue('sensorType') == 'water' ?
     deviceStatus?.@waterTemp?.text() : deviceStatus?.@airTemp?.text()
@@ -79,4 +78,8 @@ def parseStatus(deviceStatus, telemetryData) {
   } else if (settings.useLastTemperature == false) {
     sendEvent(name: 'temperature', value: temperature, unit: device.currentValue('unit'), displayed: true, isStatusChange: true)
   }
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }

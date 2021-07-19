@@ -24,24 +24,39 @@ preferences {
 }
 
 def installed() {
-  log.debug('Executing installed')
+  logMethod('installed')
   initialize()
 }
 
 def uninstalled() {
-  log.debug('Executing uninstalled')
+  logMethod('uninstalled')
   deleteDevicesExcept(null)
 }
 
 def updated() {
-  logDebug('Executing updated')
-
+  logMethod('updated')
   unsubscribe()
   initialize()
 }
 
 def initialize() {
-  logDebug('Executing initialize')
+  logMethod('initialize')
+}
+
+def logMethod(method, message = null, arguments = null) {
+  logMethod(app, method, message, arguments)
+}
+
+def logMethod(context, method, message, arguments) {
+  def argumentsString = arguments?.collect { argument ->
+    if (argument instanceof groovy.util.slurpersupport.GPathResult) {
+      // Serialize XML arguments
+      return groovy.xml.XmlUtil.serialize(argument)
+    }
+    return argument
+  }?.join(', ')
+
+  logDebug("${context.getName()}.${method}() | ${message} | ${argumentsString}")
 }
 
 def logDebug(message) {
@@ -49,16 +64,12 @@ def logDebug(message) {
     return
   }
 
+  // Escape XML on hubitat to ensure correct rendering in UI
   if (getPlatform() == 'Hubitat') {
     message = groovy.xml.XmlUtil.escapeXml(message)
   }
 
   log.debug(message)
-}
-
-def logDebug(groovy.util.slurpersupport.GPathResult xmlNode) {
-  def message = groovy.xml.XmlUtil.serialize(xmlNode)
-  logDebug(message)
 }
 
 def mainPage() {
@@ -74,7 +85,7 @@ def mainPage() {
     }
 
     section('Logging') {
-      input name: 'enableLogging', type: 'bool', title: 'Enable debug logging', defaultValue: true
+      input name: 'enableLogging', type: 'bool', title: 'Enable debug logging', defaultValue: false
     }
   }
 }
@@ -160,9 +171,11 @@ def telemetryPage() {
 }
 
 def getTelemetryData(callback) {
-  // Cache telemetry data for 5 seconds
-  if (state.telemetryTimestamp != null && state.telemetryTimestamp + 5000 > now()) {
-    logDebug('Returning cached telemetry data')
+  logMethod('getTelemetryData')
+
+  // Cache telemetry data for 10 seconds
+  if (state.telemetryTimestamp != null && state.telemetryTimestamp + 10000 > now()) {
+    logMethod('getTelemetryData', 'Returning cached telemetry data', [state.telemetryTimestamp, state.telemetryData])
 
     def telemetryData = new XmlSlurper().parseText(state.telemetryData)
     callback(telemetryData)
@@ -177,6 +190,8 @@ def getTelemetryData(callback) {
     state.telemetryTimestamp = now()
     state.telemetryData = groovy.xml.XmlUtil.serialize(response)
 
+    logMethod('getTelemetryData', 'Returning telemetry data', [state.telemetryTimestamp, state.telemetryData])
+
     if (callback != null) {
       callback(response)
     }
@@ -184,6 +199,8 @@ def getTelemetryData(callback) {
 }
 
 def getAvailableDevices() {
+  logMethod('getAvailableDevices')
+
   performApiRequest('RequestConfiguration', null) { response ->
     if (response == null) {
       return
@@ -209,6 +226,8 @@ def getAvailableDevices() {
     bowNodes.'ColorLogic-Light'.each { addDevice(availableDevices, it, null, 'Omnilogic Light') }
 
     state.availableDevices = availableDevices
+
+    logMethod('getAvailableDevices', 'Available devices', [availableDevices])
   }
 }
 
@@ -293,7 +312,7 @@ def getDeviceId(omnilogicId, deviceIdSuffix) {
 }
 
 def createDevice(omnilogicId, name, driverName, attributes) {
-  logDebug("Executing createDevice for ${name}")
+  logMethod('createDevice', 'Attributes', [omnilogicId, name, driverName, attributes])
 
   def deviceId = getDeviceId(omnilogicId, attributes?.deviceIdSuffix)
   def childDevice = getChildDevice(deviceId)
@@ -307,7 +326,7 @@ def createDevice(omnilogicId, name, driverName, attributes) {
 }
 
 def updateDevices() {
-  logDebug('Executing updateDevices')
+  logMethod('updateDevices')
 
   // Delete devices that were unselected
   deleteDevicesExcept(settings.devicesToUse)
@@ -323,7 +342,7 @@ def updateDevices() {
 
       updateDeviceStatuses()
     } catch (e) {
-      logDebug("Error updating devices: ${e}")
+      logMethod('updateDevices', 'Error updating devices', [e])
       return false
     }
   }
@@ -332,7 +351,7 @@ def updateDevices() {
 }
 
 def updateDeviceStatuses() {
-  logDebug('Executing updateDeviceStatuses')
+  logMethod('updateDeviceStatuses')
 
   getTelemetryData { telemetryData ->
     childDevices.each { device ->
@@ -344,27 +363,27 @@ def updateDeviceStatuses() {
 }
 
 def deleteDevicesExcept(deviceIds) {
-  logDebug("Executing deleteDevicesExcept for ${deviceIds}")
+  logMethod('deleteDevicesExcept', 'Attributes', [deviceIds])
 
   childDevices
     .findAll { deviceIds == null || !deviceIds.contains(it.deviceNetworkId) }
     .each {
       try {
         deleteChildDevice(it.deviceNetworkId)
-        logDebug("Deleted device ${it.deviceNetworkId}")
+        logMethod('deleteDevicesExcept', 'Deleted device', [it.deviceNetworkId])
       } catch (e) {
-        logDebug("Error deleting device ${it.deviceNetworkId}: ${e}")
+        logMethod('deleteDevicesExcept', 'Error deleting device', [it.deviceNetworkId, e])
       }
     }
 }
 
 def login(force, callback) {
+  logMethod('login', 'Arguments', [force])
+
   if (!force && state.session?.expiration > now()) {
-    logDebug('Current token is still valid')
+    logMethod('login', 'Current token is still valid')
     return callback(true)
   }
-
-  logDebug('Performing login')
 
   state.session = [
     token: null,
@@ -380,11 +399,11 @@ def login(force, callback) {
   performApiRequest('Login', parameters) { response ->
     def responseParameters = response?.Parameters?.Parameter
     if (responseParameters?.find { it.@name == 'Status' }.text() != '0') {
-      logDebug('Login failed')
+      logMethod('login', 'Failed')
       return callback(false)
     }
 
-    logDebug('Login succeeded')
+    logMethod('login', 'Succeeded')
 
     state.session.token = responseParameters.find { it.@name == 'Token' }.text()
     state.session.userId = responseParameters.find { it.@name == 'UserID' }.text()
@@ -394,6 +413,8 @@ def login(force, callback) {
 }
 
 def performApiRequest(name, parameters, callback) {
+  logMethod('performApiRequest', 'Arguments', [name, parameters])
+
   parameters = parameters ?: []
 
   // Perform login sequence for API requests other than Login itself,
@@ -411,9 +432,7 @@ def performApiRequest(name, parameters, callback) {
 
   // Perform API request
   def requestXml = formatApiRequest(name, parameters)
-
-  logDebug('Omnilogic request:')
-  logDebug(requestXml)
+  logMethod('performApiRequest', 'Request', [requestXml])
 
   httpPost([
     uri: 'https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx',
@@ -421,8 +440,7 @@ def performApiRequest(name, parameters, callback) {
     body: requestXml,
     headers: ['Token': state.session.token],
   ]) { response ->
-    logDebug("Omnilogic response: ${response.status}")
-    logDebug(response.data)
+    logMethod('performApiRequest', 'Response', [response.status, response.data])
 
     if (response.status == 200 && response.data) {
       return callback(response.data)

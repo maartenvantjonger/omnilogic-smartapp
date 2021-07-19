@@ -30,30 +30,28 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Light initialize')
-
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Light refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Light ping')
+  logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Light poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Light parseStatus')
-	parent.logDebug(deviceStatus)
+  logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def onOff = deviceStatus?.@lightState?.text()  == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
@@ -65,16 +63,18 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-  parent.logDebug('Executing Omnilogic Light on')
+	logMethod('on')
   setLightState(true)
 }
 
 def off() {
-  parent.logDebug('Executing Omnilogic Light off')
+	logMethod('off')
   setLightState(false)
 }
 
 def setLightState(isOn) {
+	logMethod('setLightState', 'Arguments', [isOn])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -95,6 +95,10 @@ def setLightState(isOn) {
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }
 
 /* TODO Add attributes

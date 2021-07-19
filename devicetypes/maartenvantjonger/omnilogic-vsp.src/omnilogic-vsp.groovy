@@ -50,7 +50,7 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic VSP initialize')
+  parent.logMethod(device.getName(), 'initialize', 'Arguments', [omnilogicId, attributes])
 
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
@@ -67,23 +67,22 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic VSP refresh')
+  logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic VSP ping')
+  logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic VSP poll')
+  logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic VSP parseStatus')
-	parent.logDebug(deviceStatus)
+  logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
   sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
@@ -106,24 +105,23 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-  parent.logDebug('Executing Omnilogic VSP on')
-
+  logMethod('on')
   def lastSpeed = device.currentValue('lastSpeed')?.toInteger()
   setPumpSpeed(lastSpeed > 0 ? lastSpeed : 100)
 }
 
 def off() {
-	parent.logDebug('Executing Omnilogic VSP off')
+  logMethod('off')
   setPumpSpeed(0)
 }
 
 def setLevel(level) {
-  parent.logDebug("Executing Omnilogic VSP setLevel ${level}")
+  logMethod('setLevel', 'Arguments', [level])
   setPumpSpeed(level)
 }
 
 def setSpeed(speed) {
-  parent.logDebug("Executing Omnilogic VSP setSpeed ${speed}")
+  logMethod('setSpeed', 'Arguments', [speed])
   sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed) {
@@ -145,7 +143,7 @@ def setSpeed(speed) {
 }
 
 def setFanSpeed(speed) {
-  parent.logDebug("Executing Omnilogic VSP setFanSpeed ${speed}")
+  logMethod('setFanSpeed', 'Arguments', [speed])
   sendEvent(name: 'fanSpeed', value: speed, displayed: true)
 
   switch (speed as Integer) {
@@ -170,6 +168,8 @@ def setFanSpeed(speed) {
 }
 
 def setPumpSpeed(speed) {
+  logMethod('setPumpSpeed', 'Arguments', [speed])
+
   if (getIsSpillover()) {
     setSpilloverPumpSpeed(speed)
   } else {
@@ -178,6 +178,8 @@ def setPumpSpeed(speed) {
 }
 
 def setSpilloverPumpSpeed(speed) {
+  logMethod('setSpilloverPumpSpeed', 'Arguments', [speed])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -202,6 +204,8 @@ def setSpilloverPumpSpeed(speed) {
 }
 
 def setFilterPumpSpeed(speed) {
+  logMethod('setFilterPumpSpeed', 'Arguments', [speed])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -229,7 +233,10 @@ def getIsSpillover() {
   return device.currentValue('isSpillover') == 1
 }
 
-
 def getPlatform() {
   physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }

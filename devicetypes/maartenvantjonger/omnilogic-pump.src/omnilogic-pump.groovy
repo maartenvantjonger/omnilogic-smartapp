@@ -32,30 +32,28 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Pump initialize')
-
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Pump refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Pump ping')
+	logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Pump poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Pump parseStatus')
-	parent.logDebug(deviceStatus)
+  logMethod('parseStatus', 'Arguments', [deviceStatus])
 
   def pumpState = deviceStatus?.@pumpState?.text() ?: deviceStatus?.@filterState?.text()
   def onOff = pumpState == '1' ? 'on' : 'off'
@@ -69,16 +67,18 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-  parent.logDebug('Executing Omnilogic Pump on')
+	logMethod('on')
   setPumpState(true)
 }
 
 def off() {
-  parent.logDebug('Executing Omnilogic Pump off')
+	logMethod('off')
   setPumpState(false)
 }
 
 def setPumpState(isOn) {
+	logMethod('setPumpState', 'Arguments', [isOn])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -99,4 +99,8 @@ def setPumpState(isOn) {
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }

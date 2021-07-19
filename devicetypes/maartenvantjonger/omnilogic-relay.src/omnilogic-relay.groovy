@@ -30,46 +30,45 @@ metadata {
 }
 
 def initialize(omnilogicId, attributes) {
-	parent.logDebug('Executing Omnilogic Relay initialize')
-
+  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
   sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
   sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
 }
 
 def refresh() {
-	parent.logDebug('Executing Omnilogic Relay refresh')
+	logMethod('refresh')
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-	parent.logDebug('Executing Omnilogic Relay ping')
+	logMethod('ping')
   refresh()
 }
 
 def poll() {
-  logDebug('Executing Omnilogic Relay poll')
+	logMethod('poll')
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	parent.logDebug('Executing Omnilogic Relay parseStatus')
-	parent.logDebug(deviceStatus)
-
+	logMethod('parseStatus', 'Arguments', [deviceStatus])
   def onOff = deviceStatus?.@relayState?.text() == '1' ? 'on' : 'off'
   sendEvent(name: 'switch', value: onOff, displayed: true)
 }
 
 def on() {
-  parent.logDebug('Executing Omnilogic Relay on')
+	logMethod('on')
   setRelayState(true)
 }
 
 def off() {
-  parent.logDebug('Executing Omnilogic Relay off')
+	logMethod('off')
   setRelayState(false)
 }
 
 def setRelayState(isOn) {
+	logMethod('setRelayState', 'Arguments', [isOn])
+
   def parameters = [
     [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
     [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
@@ -90,4 +89,8 @@ def setRelayState(isOn) {
       sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
     }
   }
+}
+
+def logMethod(method, message = null, arguments = null) {
+  parent.logMethod(device, method, message, arguments)
 }
