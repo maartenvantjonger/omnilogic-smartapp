@@ -48,15 +48,25 @@ def logMethod(method, message = null, arguments = null) {
 }
 
 def logMethod(context, method, message, arguments) {
-  def argumentsString = arguments?.collect { argument ->
-    if (argument instanceof groovy.util.slurpersupport.GPathResult) {
-      // Serialize XML arguments
-      return groovy.xml.XmlUtil.serialize(argument)
-    }
-    return argument
-  }?.join(', ')
+  def logMessage = "${context.getName()}.${method}()"
 
-  logDebug("${context.getName()}.${method}() | ${message} | ${argumentsString}")
+  if (message) {
+    logMessage += " | ${message}"
+  }
+
+  if (arguments) {
+    def argumentsString = arguments.collect { argument ->
+      if (argument instanceof groovy.util.slurpersupport.GPathResult) {
+        // Serialize XML arguments
+        return groovy.xml.XmlUtil.serialize(argument)
+      }
+      return argument
+    }.join(', ')
+
+    logMessage += " | ${argumentsString}"
+  }
+
+  logDebug(logMessage)
 }
 
 def logDebug(message) {
