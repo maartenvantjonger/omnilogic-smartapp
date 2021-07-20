@@ -16,7 +16,6 @@ metadata {
     capability 'Health Check'
     capability 'Polling'
     capability 'Thermostat'
-    capability 'Thermostat Mode'
     capability 'Temperature Measurement'
     attribute 'bowId', 'number'
     attribute 'omnilogicId', 'number'
@@ -41,9 +40,12 @@ def initialize(omnilogicId, attributes) {
   sendEvent(name: 'supportedThermostatModes', value: ['off', 'heat'], displayed: true)
   sendEvent(name: 'supportedThermostatFanModes', value: [], displayed: true)
   sendEvent(name: 'thermostatMode', value: 'off', displayed: true)
+  sendEvent(name: 'thermostatOperatingState', value: 'idle', displayed: true)
   sendEvent(name: 'switch', value: 'off', displayed: true)
   sendEvent(name: 'temperature', value: 0, unit: temperatureUnit, displayed: true)
+  sendEvent(name: 'coolingSetpoint', value: 0, unit: temperatureUnit, displayed: true)
   sendEvent(name: 'heatingSetpoint', value: 0, unit: temperatureUnit, displayed: true)
+  sendEvent(name: 'thermostatSetpoint', value: 0, unit: temperatureUnit, displayed: true)
   sendEvent(name: 'thermostatSetpointRange', value: [attributes.minTemperature, attributes.maxTemperature], unit: temperatureUnit, displayed: true)
   sendEvent(name: 'unit', value: temperatureUnit, displayed: true)
 }
