@@ -5,136 +5,147 @@
  */
 metadata {
   definition(
-    name: 'Omnilogic VSP',
-    namespace: 'maartenvantjonger',
-    author: 'Maarten van Tjonger'
+    name: "Omnilogic VSP",
+    namespace: "maartenvantjonger",
+    author: "Maarten van Tjonger"
   ) {
-    capability 'Switch'
-    capability 'Switch Level'
-    capability 'Actuator'
-    capability 'Refresh'
-    capability 'Health Check'
-    capability 'Polling'
+    capability "Switch"
+    capability "Switch Level"
+    capability "Actuator"
+    capability "Refresh"
+    capability "Health Check"
+    capability "Polling"
 
-    if (getPlatform() == 'Hubitat') {
-      capability 'Fan Control'
+    if (getPlatform() == "Hubitat") {
+      capability "Fan Control"
     } else {
-      capability 'Fan Speed'
+      capability "Fan Speed"
     }
 
-    attribute 'bowId', 'number'
-    attribute 'omnilogicId', 'number'
-    attribute 'lastSpeed', 'number'
-    attribute 'valvePosition', 'number'
-    attribute 'whyFilterIsOn', 'number'
-    attribute 'fpOverride ', 'number'
-    attribute 'isSpillover', 'number'
+    attribute "bowId", "number"
+    attribute "omnilogicId", "number"
+    attribute "lastSpeed", "number"
+    attribute "valvePosition", "number"
+    attribute "whyFilterIsOn", "number"
+    attribute "fpOverride ", "number"
+    attribute "isSpillover", "number"
+
+    command "setSpilloverPumpSpeed", [
+      [
+        name: "Enabled*",
+        type: "ENUM",
+        constraints: [
+          0: "No",
+          1: "Yes"
+        ]
+      ]
+    ]
   }
 
   tiles {
-    standardTile('switch', 'device.switch', width: 2, height: 2, canChangeIcon: true, decoration: 'flat') {
-      state('off', label: '${name}', action: 'on')
-      state('on', label: '${name}', action: 'off')
+    standardTile("switch", "device.switch", width: 2, height: 2, canChangeIcon: true, decoration: "flat") {
+      state("off", label: "${name}", action: "on")
+      state("on", label: "${name}", action: "off")
     }
 
-		standardTile('fanSpeed', 'device.fanSpeed', width: 6, height: 4, canChangeIcon: true, decoration: 'flat') {
-      state('0', label: 'off', action: 'switch.on', icon: 'st.thermostat.fan-off')
-      state('1', label: 'low', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state('2', label: 'medium', action: 'switch.off', icon: 'st.thermostat.fan-on')
-      state('3', label: 'high', action: 'switch.off', icon: 'st.thermostat.fan-on')
+		standardTile("fanSpeed", "device.fanSpeed", width: 6, height: 4, canChangeIcon: true, decoration: "flat") {
+      state("0", label: "off", action: "switch.on", icon: "st.thermostat.fan-off")
+      state("1", label: "low", action: "switch.off", icon: "st.thermostat.fan-on")
+      state("2", label: "medium", action: "switch.off", icon: "st.thermostat.fan-on")
+      state("3", label: "high", action: "switch.off", icon: "st.thermostat.fan-on")
 		}
 
-    main('switch')
-    details(['switch', 'fanSpeed'])
+    main("switch")
+    details(["switch", "fanSpeed"])
   }
 }
 
 def initialize(omnilogicId, attributes) {
-  logMethod('initialize', 'Arguments', [omnilogicId, attributes])
+  logMethod("initialize", "Arguments", [omnilogicId, attributes])
 
-  sendEvent(name: 'omnilogicId', value: omnilogicId, displayed: true)
-  sendEvent(name: 'bowId', value: attributes['bowId'], displayed: true)
-  sendEvent(name: 'level', value: 0, displayed: true)
-  sendEvent(name: 'isSpillover', value: attributes['isSpillover'], displayed: true)
+  sendEvent(name: "omnilogicId", value: omnilogicId, displayed: true)
+  sendEvent(name: "bowId", value: attributes["bowId"], displayed: true)
+  sendEvent(name: "level", value: 0, displayed: true)
+  sendEvent(name: "isSpillover", value: attributes["isSpillover"], displayed: true)
 
-  if (getPlatform() == 'Hubitat') {
-    sendEvent(name: 'level', value: 0, displayed: true)
-    sendEvent(name: 'fanSpeed', value: 'off', displayed: true)
-    sendEvent(name: 'supportedFanSpeeds', value: ['off', 'low', 'medium', 'high'], displayed: true)
+  if (getPlatform() == "Hubitat") {
+    sendEvent(name: "level", value: 0, displayed: true)
+    sendEvent(name: "fanSpeed", value: "off", displayed: true)
+    sendEvent(name: "supportedFanSpeeds", value: ["off", "low", "medium", "high"], displayed: true)
   } else {
-    sendEvent(name: 'fanSpeed', value: 0, displayed: true)
+    sendEvent(name: "fanSpeed", value: 0, displayed: true)
   }
 }
 
 def refresh() {
-  logMethod('refresh')
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def ping() {
-  logMethod('ping')
+  logMethod("ping")
   refresh()
 }
 
 def poll() {
-  logMethod('poll')
+  logMethod("poll")
   refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-  logMethod('parseStatus', 'Arguments', [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
 
   def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
-  sendEvent(name: 'valvePosition', value: valvePosition, displayed: true)
+  sendEvent(name: "valvePosition", value: valvePosition, displayed: true)
 
-  def enabled = deviceStatus?.@filterState?.text() == '1' && (!getIsSpillover() || valvePosition == 3)
-  def onOff = enabled ? 'on' : 'off'
-  sendEvent(name: 'switch', value: onOff, displayed: true)
+  def enabled = deviceStatus?.@filterState?.text() == "1" && (!getIsSpillover() || valvePosition == 3)
+  def onOff = enabled ? "on" : "off"
+  sendEvent(name: "switch", value: onOff, displayed: true)
 
   def level = deviceStatus?.@filterSpeed?.text().toInteger()
-  sendEvent(name: 'level', value: level, displayed: true)
+  sendEvent(name: "level", value: level, displayed: true)
 
   def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
-  sendEvent(name: 'lastSpeed', value: lastSpeed, displayed: true)
+  sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
 
   def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
-  sendEvent(name: 'whyFilterIsOn', value: whyFilterIsOn, displayed: true)
+  sendEvent(name: "whyFilterIsOn", value: whyFilterIsOn, displayed: true)
 
   def fpOverride = deviceStatus?.@fpOverride?.text().toInteger()
-  sendEvent(name: 'fpOverride', value: fpOverride, displayed: true)
+  sendEvent(name: "fpOverride", value: fpOverride, displayed: true)
 }
 
 def on() {
-  logMethod('on')
-  def lastSpeed = device.currentValue('lastSpeed')?.toInteger()
+  logMethod("on")
+  def lastSpeed = device.currentValue("lastSpeed")?.toInteger()
   setPumpSpeed(lastSpeed > 0 ? lastSpeed : 100)
 }
 
 def off() {
-  logMethod('off')
+  logMethod("off")
   setPumpSpeed(0)
 }
 
 def setLevel(level) {
-  logMethod('setLevel', 'Arguments', [level])
+  logMethod("setLevel", "Arguments", [level])
   setPumpSpeed(level)
 }
 
 def setSpeed(speed) {
-  logMethod('setSpeed', 'Arguments', [speed])
-  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
+  logMethod("setSpeed", "Arguments", [speed])
+  sendEvent(name: "fanSpeed", value: speed, displayed: true)
 
   switch (speed) {
-    case 'off':
+    case "off":
       setPumpSpeed(0)
       break
-    case 'low':
+    case "low":
       setPumpSpeed(75)
       break
-    case 'medium':
+    case "medium":
       setPumpSpeed(85)
       break
-    case 'high':
+    case "high":
       setPumpSpeed(100)
       break
     default:
@@ -143,8 +154,8 @@ def setSpeed(speed) {
 }
 
 def setFanSpeed(speed) {
-  logMethod('setFanSpeed', 'Arguments', [speed])
-  sendEvent(name: 'fanSpeed', value: speed, displayed: true)
+  logMethod("setFanSpeed", "Arguments", [speed])
+  sendEvent(name: "fanSpeed", value: speed, displayed: true)
 
   switch (speed as Integer) {
     case 0:
@@ -168,7 +179,7 @@ def setFanSpeed(speed) {
 }
 
 def setPumpSpeed(speed) {
-  logMethod('setPumpSpeed', 'Arguments', [speed])
+  logMethod("setPumpSpeed", "Arguments", [speed])
 
   if (getIsSpillover()) {
     setSpilloverPumpSpeed(speed)
@@ -178,63 +189,63 @@ def setPumpSpeed(speed) {
 }
 
 def setSpilloverPumpSpeed(speed) {
-  logMethod('setSpilloverPumpSpeed', 'Arguments', [speed])
+  logMethod("setSpilloverPumpSpeed", "Arguments", [speed])
 
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
-    [name: 'Speed', dataType: 'int', value: speed],
-    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
-    [name: 'StartTimeHours', dataType: 'int', value: 0],
-    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
-    [name: 'EndTimeHours', dataType: 'int', value: 0],
-    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
-    [name: 'DaysActive', dataType: 'int', value: 0],
-    [name: 'Recurring', dataType: 'bool', value: false]
+    [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
+    [name: "EquipmentID", dataType: "int", value: device.currentValue("omnilogicId")],
+    [name: "Speed", dataType: "int", value: speed],
+    [name: "IsCountDownTimer", dataType: "bool", value: false],
+    [name: "StartTimeHours", dataType: "int", value: 0],
+    [name: "StartTimeMinutes", dataType: "int", value: 0],
+    [name: "EndTimeHours", dataType: "int", value: 0],
+    [name: "EndTimeMinutes", dataType: "int", value: 0],
+    [name: "DaysActive", dataType: "int", value: 0],
+    [name: "Recurring", dataType: "bool", value: false]
   ]
 
-  parent.performApiRequest('SetUISpilloverCmd', parameters) { response ->
-    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+  parent.performApiRequest("SetUISpilloverCmd", parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == "Status" }.text() == "0"
     if (success) {
-      def onOff = speed == 0 ? 'off' : 'on'
-      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-      sendEvent(name: 'level', value: speed, displayed: true, isStateChange: true)
+      def onOff = speed == 0 ? "off" : "on"
+      sendEvent(name: "switch", value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: "level", value: speed, displayed: true, isStateChange: true)
     }
   }
 }
 
 def setFilterPumpSpeed(speed) {
-  logMethod('setFilterPumpSpeed', 'Arguments', [speed])
+  logMethod("setFilterPumpSpeed", "Arguments", [speed])
 
   def parameters = [
-    [name: 'PoolID', dataType: 'int', value: device.currentValue('bowId')],
-    [name: 'EquipmentID', dataType: 'int', value: device.currentValue('omnilogicId')],
-    [name: 'IsOn', dataType: 'int', value: speed],
-    [name: 'IsCountDownTimer', dataType: 'bool', value: false],
-    [name: 'StartTimeHours', dataType: 'int', value: 0],
-    [name: 'StartTimeMinutes', dataType: 'int', value: 0],
-    [name: 'EndTimeHours', dataType: 'int', value: 0],
-    [name: 'EndTimeMinutes', dataType: 'int', value: 0],
-    [name: 'DaysActive', dataType: 'int', value: 0],
-    [name: 'Recurring', dataType: 'bool', value: false]
+    [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
+    [name: "EquipmentID", dataType: "int", value: device.currentValue("omnilogicId")],
+    [name: "IsOn", dataType: "int", value: speed],
+    [name: "IsCountDownTimer", dataType: "bool", value: false],
+    [name: "StartTimeHours", dataType: "int", value: 0],
+    [name: "StartTimeMinutes", dataType: "int", value: 0],
+    [name: "EndTimeHours", dataType: "int", value: 0],
+    [name: "EndTimeMinutes", dataType: "int", value: 0],
+    [name: "DaysActive", dataType: "int", value: 0],
+    [name: "Recurring", dataType: "bool", value: false]
   ]
 
-  parent.performApiRequest('SetUIEquipmentCmd', parameters) { response ->
-    def success = response.Parameters.Parameter.find { it.@name == 'Status' }.text() == '0'
+  parent.performApiRequest("SetUIEquipmentCmd", parameters) { response ->
+    def success = response.Parameters.Parameter.find { it.@name == "Status" }.text() == "0"
     if (success) {
-      def onOff = speed == 0 ? 'off' : 'on'
-      sendEvent(name: 'switch', value: onOff, displayed: true, isStateChange: true)
-      sendEvent(name: 'level', value: speed, displayed: true, isStateChange: true)
+      def onOff = speed == 0 ? "off" : "on"
+      sendEvent(name: "switch", value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: "level", value: speed, displayed: true, isStateChange: true)
     }
   }
 }
 
 def getIsSpillover() {
-  return device.currentValue('isSpillover') == 1
+  return device.currentValue("isSpillover") == 1
 }
 
 def getPlatform() {
-  physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
+  physicalgraph?.device?.HubAction ? "SmartThings" : "Hubitat"
 }
 
 def logMethod(method, message = null, arguments = null) {
