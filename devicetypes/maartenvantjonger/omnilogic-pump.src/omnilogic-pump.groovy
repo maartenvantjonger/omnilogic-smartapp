@@ -20,17 +20,6 @@ metadata {
     attribute "pumpState", "number"
     attribute "pumpSpeed", "number"
     attribute "isSpillover", "number"
-
-    command "setSpilloverPumpState", [
-      [
-        name: "Enabled*",
-        type: "ENUM",
-        constraints: [
-          0: "No",
-          1: "Yes"
-        ]
-      ]
-    ]
   }
 
   tiles {

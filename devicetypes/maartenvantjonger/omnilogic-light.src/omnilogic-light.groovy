@@ -18,42 +18,7 @@ metadata {
     attribute "bowId", "number"
     attribute "omnilogicId", "number"
 
-    command "setLightShow", [
-      [
-        name: "Show*",
-        type: "ENUM",
-        description: "Select a light show",
-        constraints: [
-          1: "Show-Voodoo Lounge",
-          2: "Fixed-Deep Blue Sea",
-          3: "Fixed-Royal Blue",
-          4: "Fixed-Afternoon Skies",
-          5: "Fixed-Aqua Green",
-          6: "Fixed-Emerald",
-          7: "Fixed-Cloud White",
-          8: "Fixed-Warm Red",
-          9: "Fixed-Flamingo",
-          10: "Fixed-Vivid Violet",
-          11: "Fixed-Sangria",
-          12: "Show-Twilight",
-          13: "Show-Tranquility",
-          14: "Show-Gemstone",
-          15: "Show-USA",
-          16: "Show-Mardi Gras",
-          17: "Show-Cool Cabaret"
-        ]
-      ], [
-        name: "Speed*",
-        type: "NUMBER",
-        description: "Set speed percentage",
-        range: 0..100
-      ], [
-        name: "Brightness*",
-        description: "Set brightness percentage",
-        type: "NUMBER",
-        range: 0..100
-      ]
-    ]
+    command "setLightShow", ["NUMBER", "NUMBER", "NUMBER"]
   }
 
   tiles {

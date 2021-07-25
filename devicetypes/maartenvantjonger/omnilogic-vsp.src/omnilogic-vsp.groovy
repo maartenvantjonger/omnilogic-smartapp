@@ -29,17 +29,6 @@ metadata {
     attribute "whyFilterIsOn", "number"
     attribute "fpOverride ", "number"
     attribute "isSpillover", "number"
-
-    command "setSpilloverPumpSpeed", [
-      [
-        name: "Enabled*",
-        type: "ENUM",
-        constraints: [
-          0: "No",
-          1: "Yes"
-        ]
-      ]
-    ]
   }
 
   tiles {

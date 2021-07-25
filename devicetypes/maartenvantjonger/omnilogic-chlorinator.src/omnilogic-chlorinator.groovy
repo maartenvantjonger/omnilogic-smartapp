@@ -28,17 +28,6 @@ metadata {
     attribute "chlrAlert", "number"
     attribute "chlrError", "number"
     attribute "isSuperChlorinator", "number"
-
-    command "enableSuperChlorinator", [
-      [
-        name: "Enabled*",
-        type: "ENUM",
-        constraints: [
-          0: "No",
-          1: "Yes"
-        ]
-      ]
-    ]
   }
 
   tiles {
