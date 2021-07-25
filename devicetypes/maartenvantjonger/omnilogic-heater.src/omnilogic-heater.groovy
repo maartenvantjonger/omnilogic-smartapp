@@ -104,7 +104,7 @@ def parseStatus(deviceStatus, telemetryData) {
   def temperatureInHubUnit = convertTemperatureToHubUnit(temperature)
     sendEvent(name: "temperature", value: temperatureInHubUnit, unit: hubTemperatureUnit, displayed: true)
     sendEvent(name: "lastTemperature", value: temperatureInHubUnit, unit: hubTemperatureUnit, displayed: true)
-    sendEvent(name: "lastTemperatureDate", value: new Date().format("yyyy-MM-dd"T"HH:mm:ss"), displayed: true)
+    sendEvent(name: "lastTemperatureDate", value: new Date().format("yyyy-MM-dd'T'HH:mm:ss"), displayed: true)
   } else if (settings.useLastTemperature == false) {
     sendEvent(name: "temperature", value: null, unit: hubTemperatureUnit, displayed: true)
   }
