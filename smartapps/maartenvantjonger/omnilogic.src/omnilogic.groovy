@@ -4,43 +4,43 @@
  *  Copyright 2021 Maarten van Tjonger
  */
 definition(
-  name: 'Omnilogic',
-  namespace: 'maartenvantjonger',
-  author: 'Maarten van Tjonger',
-  description: 'Integrate Omnilogic pool equipment',
-  category: 'Convenience',
-  iconUrl: 'https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png',
-  iconX2Url: 'https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png',
-  iconX3Url: 'https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png'
+  name: "Omnilogic",
+  namespace: "maartenvantjonger",
+  author: "Maarten van Tjonger",
+  description: "Integrate Omnilogic pool equipment",
+  category: "Convenience",
+  iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+  iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
+  iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png"
 )
 
 preferences {
-  page(name: 'mainPage', title: 'Omnilogic settings', install: true, uninstall: true)
-  page(name: 'loginPage', title: 'Omnilogic account')
-  page(name: 'loginResultPage', title: 'Omnilogic account')
-  page(name: 'devicePage', title: 'Omnilogic devices')
-  page(name: 'deviceResultPage', title: 'Omnilogic devices')
-  page(name: 'telemetryPage', title: 'Omnilogic telemetry')
+  page(name: "mainPage", title: "Omnilogic settings", install: true, uninstall: true)
+  page(name: "loginPage", title: "Omnilogic account")
+  page(name: "loginResultPage", title: "Omnilogic account")
+  page(name: "devicePage", title: "Omnilogic devices")
+  page(name: "deviceResultPage", title: "Omnilogic devices")
+  page(name: "telemetryPage", title: "Omnilogic telemetry")
 }
 
 def installed() {
-  logMethod('installed')
+  logMethod("installed")
   initialize()
 }
 
 def uninstalled() {
-  logMethod('uninstalled')
+  logMethod("uninstalled")
   deleteDevicesExcept(null)
 }
 
 def updated() {
-  logMethod('updated')
+  logMethod("updated")
   unsubscribe()
   initialize()
 }
 
 def initialize() {
-  logMethod('initialize')
+  logMethod("initialize")
 }
 
 def logMethod(method, message = null, arguments = null) {
@@ -61,7 +61,7 @@ def logMethod(context, method, message, arguments) {
         return groovy.xml.XmlUtil.serialize(argument)
       }
       return argument
-    }.join(', ')
+    }.join(", ")
 
     logMessage += " | ${argumentsString}"
   }
@@ -75,7 +75,7 @@ def logDebug(message) {
   }
 
   // Escape XML on hubitat to ensure correct rendering in UI
-  if (getPlatform() == 'Hubitat') {
+  if (getPlatform() == "Hubitat") {
     message = groovy.xml.XmlUtil.escapeXml(message)
   }
 
@@ -87,41 +87,41 @@ def mainPage() {
     return loginPage()
   }
 
-  dynamicPage(name: 'mainPage') {
+  dynamicPage(name: "mainPage") {
     section {
-      href 'loginPage', title: 'Account', description: 'Change account settings'
-      href 'devicePage', title: 'Devices', description: 'Choose pool equipment devices'
-      href 'telemetryPage', title: 'Telemetry', description: 'View system status'
+      href "loginPage", title: "Account", description: "Change account settings"
+      href "devicePage", title: "Devices", description: "Choose pool equipment devices"
+      href "telemetryPage", title: "Telemetry", description: "View system status"
     }
 
-    section('Logging') {
-      input name: 'enableLogging', type: 'bool', title: 'Enable debug logging', defaultValue: false
+    section("Logging") {
+      input name: "enableLogging", type: "bool", title: "Enable debug logging", defaultValue: false
     }
   }
 }
 
 def loginPage() {
-  return dynamicPage(name: 'loginPage', nextPage: 'loginResultPage') {
-    section('Enter your Omnilogic account credentials') {
-      input('username', 'email', title: 'Username', description: '')
-      input('password', 'password', title: 'Password', description: '')
-      input('mspId', 'text', title: 'MSP System ID', description: 'The MSP (Main System Processor) System ID of your Omnilogic pool controller')
+  return dynamicPage(name: "loginPage", nextPage: "loginResultPage") {
+    section("Enter your Omnilogic account credentials") {
+      input("username", "email", title: "Username", description: "")
+      input("password", "password", title: "Password", description: "")
+      input("mspId", "text", title: "MSP System ID", description: "The MSP (Main System Processor) System ID of your Omnilogic pool controller")
     }
   }
 }
 
 def loginResultPage() {
-  def resultText = 'Login failed. Please try again.'
-  def nextPage = 'loginPage'
+  def resultText = "Login failed. Please try again."
+  def nextPage = "loginPage"
 
   login(true) { success ->
     if (success) {
-      resultText = 'Login succeeded'
-      nextPage = 'mainPage'
+      resultText = "Login succeeded"
+      nextPage = "mainPage"
     }
   }
 
-  return dynamicPage(name: 'loginResultPage', nextPage: nextPage) {
+  return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
     section {
       paragraph resultText
     }
@@ -136,13 +136,13 @@ def devicePage() {
   getAvailableDevices()
   def availableDeviceNames = state.availableDevices.collectEntries { [it.key, "${it.value.name} (${it.value.driverName})"] }
 
-  return dynamicPage(name: 'devicePage', nextPage: 'deviceResultPage') {
+  return dynamicPage(name: "devicePage", nextPage: "deviceResultPage") {
     if (availableDeviceNames?.size() > 0) {
       section {
         input(
-          name: 'devicesToUse',
-          type: 'enum',
-          title: 'Select devices to use',
+          name: "devicesToUse",
+          type: "enum",
+          title: "Select devices to use",
           required: false,
           multiple: true,
           options: availableDeviceNames
@@ -150,7 +150,7 @@ def devicePage() {
       }
     } else {
       section {
-        paragraph 'No devices found'
+        paragraph "No devices found"
       }
     }
   }
@@ -159,9 +159,9 @@ def devicePage() {
 def deviceResultPage() {
   def updated = updateDevices()
 
-  return dynamicPage(name: 'deviceResultPage', nextPage: 'mainPage') {
+  return dynamicPage(name: "deviceResultPage", nextPage: "mainPage") {
     section {
-      paragraph updated ? 'Updated devices' : 'Failed to create devices. Make sure all Omnilogic Device Handlers are installed'
+      paragraph updated ? "Updated devices" : "Failed to create devices. Make sure all Omnilogic Device Handlers are installed"
     }
   }
 }
@@ -169,30 +169,30 @@ def deviceResultPage() {
 def telemetryPage() {
   updateDeviceStatuses()
 
-  def telemetryData = getPlatform() == 'Hubitat'
+  def telemetryData = getPlatform() == "Hubitat"
       ? groovy.xml.XmlUtil.escapeXml(state.telemetryData)
       : state.telemetryData
 
-  return dynamicPage(name: 'telemetryPage') {
+  return dynamicPage(name: "telemetryPage") {
     section {
-      paragraph telemetryData ?: 'No data'
+      paragraph telemetryData ?: "No data"
     }
   }
 }
 
 def getTelemetryData(callback) {
-  logMethod('getTelemetryData')
+  logMethod("getTelemetryData")
 
   // Cache telemetry data for 10 seconds
   if (state.telemetryTimestamp != null && state.telemetryTimestamp + 10000 > now()) {
-    logMethod('getTelemetryData', 'Returning cached telemetry data', [state.telemetryTimestamp, state.telemetryData])
+    logMethod("getTelemetryData", "Returning cached telemetry data", [state.telemetryTimestamp, state.telemetryData])
 
     def telemetryData = new XmlSlurper().parseText(state.telemetryData)
     callback(telemetryData)
     return
   }
 
-  performApiRequest('RequestTelemetryData', null) { response ->
+  performApiRequest("RequestTelemetryData", null) { response ->
     if (response == null) {
       return
     }
@@ -200,7 +200,7 @@ def getTelemetryData(callback) {
     state.telemetryTimestamp = now()
     state.telemetryData = groovy.xml.XmlUtil.serialize(response)
 
-    logMethod('getTelemetryData', 'Returning telemetry data', [state.telemetryTimestamp, state.telemetryData])
+    logMethod("getTelemetryData", "Returning telemetry data", [state.telemetryTimestamp, state.telemetryData])
 
     if (callback != null) {
       callback(response)
@@ -209,9 +209,9 @@ def getTelemetryData(callback) {
 }
 
 def getAvailableDevices() {
-  logMethod('getAvailableDevices')
+  logMethod("getAvailableDevices")
 
-  performApiRequest('RequestConfiguration', null) { response ->
+  performApiRequest("RequestConfiguration", null) { response ->
     if (response == null) {
       return
     }
@@ -222,27 +222,27 @@ def getAvailableDevices() {
     // Parse available devices from MSP Config
     response.Backyard.each { addTemperatureSensor(availableDevices, it) }
 
-    def bowNodes = response.Backyard.'Body-of-water'
+    def bowNodes = response.Backyard."Body-of-water"
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addFilter(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Heater.each { addHeater(availableDevices, it) }
     bowNodes.Chlorinator.each { addChlorinator(availableDevices, it) }
-    bowNodes.Relay.each { addDevice(availableDevices, it, null, 'Omnilogic Relay') }
-    bowNodes.'ColorLogic-Light'.each { addDevice(availableDevices, it, null, 'Omnilogic Light') }
+    bowNodes.Relay.each { addDevice(availableDevices, it, null, "Omnilogic Relay") }
+    bowNodes."ColorLogic-Light".each { addDevice(availableDevices, it, null, "Omnilogic Light") }
 
     state.availableDevices = availableDevices
 
-    logMethod('getAvailableDevices', 'Available devices', [availableDevices])
+    logMethod("getAvailableDevices", "Available devices", [availableDevices])
   }
 }
 
 def addTemperatureSensor(availableDevices, deviceDefinition) {
-  def omnilogicId = deviceDefinition.'System-Id'.text()
+  def omnilogicId = deviceDefinition."System-Id".text()
   def bowId = omnilogicId
 
   // Use MSP ID for Backyard Air Temperature Sensor so we can update it using telemetry data
-  if (omnilogicId == '0') {
+  if (omnilogicId == "0") {
     omnilogicId = settings.mspId
     bowId = null
   }
@@ -252,7 +252,7 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
     name: deviceDefinition.Name.text(),
-    driverName: 'Omnilogic Temperature Sensor',
+    driverName: "Omnilogic Temperature Sensor",
     attributes: [
       bowId: bowId,
       sensorType: deviceDefinition.Sensor.Type.text(),
@@ -262,41 +262,41 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
 }
 
 def addFilter(availableDevices, deviceDefinition) {
-  def driverName = deviceDefinition.'Filter-Type'.text() == 'FMT_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
-  addDevice(availableDevices, deviceDefinition, 'Filter', driverName, null)
+  def driverName = deviceDefinition."Filter-Type".text() == "FMT_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
+  addDevice(availableDevices, deviceDefinition, "Filter", driverName, null)
 
-  if (deviceDefinition.parent().'Supports-Spillover' == 'yes') {
-    addDevice(availableDevices, deviceDefinition, 'Spillover', driverName, [isSpillover: 1, deviceIdSuffix: 's'])
+  if (deviceDefinition.parent()."Supports-Spillover" == "yes") {
+    addDevice(availableDevices, deviceDefinition, "Spillover", driverName, [isSpillover: 1, deviceIdSuffix: "s"])
   }
 }
 
 def addPump(availableDevices, deviceDefinition) {
-  def driverName = deviceDefinition.'Type'.text() == 'PMP_VARIABLE_SPEED_PUMP' ? 'Omnilogic VSP' : 'Omnilogic Pump'
+  def driverName = deviceDefinition."Type".text() == "PMP_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
   addDevice(availableDevices, deviceDefinition, null, driverName, null)
 }
 
 def addHeater(availableDevices, deviceDefinition) {
   def attributes = [
-    omnilogicHeaterId: deviceDefinition.Operation.find { it.name() == 'Heater-Equipment' }.'System-Id'.text(),
-    minTemperature: deviceDefinition.'Min-Settable-Water-Temp'.text().toInteger(),
-    maxTemperature: deviceDefinition.'Max-Settable-Water-Temp'.text().toInteger(),
+    omnilogicHeaterId: deviceDefinition.Operation.find { it.name() == "Heater-Equipment" }."System-Id".text(),
+    minTemperature: deviceDefinition."Min-Settable-Water-Temp".text().toInteger(),
+    maxTemperature: deviceDefinition."Max-Settable-Water-Temp".text().toInteger(),
     temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
   ]
 
-  addDevice(availableDevices, deviceDefinition, 'Heater', 'Omnilogic Heater', attributes)
+  addDevice(availableDevices, deviceDefinition, "Heater", "Omnilogic Heater", attributes)
 }
 
 def addChlorinator(availableDevices, deviceDefinition) {
-  addDevice(availableDevices, deviceDefinition, 'Chlorinator', 'Omnilogic Chlorinator', null)
-  addDevice(availableDevices, deviceDefinition, 'Super Chlorinator', 'Omnilogic Chlorinator', [isSuperChlorinator: 1, deviceIdSuffix: 's'])
+  addDevice(availableDevices, deviceDefinition, "Chlorinator", "Omnilogic Chlorinator", null)
+  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Chlorinator", [isSuperChlorinator: 1, deviceIdSuffix: "s"])
 }
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
-  def omnilogicId = deviceDefinition.'System-Id'.text()
+  def omnilogicId = deviceDefinition."System-Id".text()
   def bowDefinition = deviceDefinition.parent()
 
   attributes = attributes ?: [:]
-  attributes.bowId = bowDefinition.'System-Id'.text()
+  attributes.bowId = bowDefinition."System-Id".text()
 
   def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
 
@@ -313,18 +313,18 @@ def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) 
 }
 
 def getDeviceId(omnilogicId, deviceIdSuffix) {
-  deviceIdSuffix = deviceIdSuffix ?: ''
+  deviceIdSuffix = deviceIdSuffix ?: ""
   return "omnilogic-${omnilogicId}${deviceIdSuffix}"
 }
 
 def createDevice(omnilogicId, name, driverName, attributes) {
-  logMethod('createDevice', 'Attributes', [omnilogicId, name, driverName, attributes])
+  logMethod("createDevice", "Attributes", [omnilogicId, name, driverName, attributes])
 
   def deviceId = getDeviceId(omnilogicId, attributes?.deviceIdSuffix)
   def childDevice = getChildDevice(deviceId)
 
   if (childDevice == null) {
-    childDevice = addChildDevice('maartenvantjonger', driverName, deviceId, null, [name: name, completedSetup: true])
+    childDevice = addChildDevice("maartenvantjonger", driverName, deviceId, null, [name: name, completedSetup: true])
     childDevice.initialize(omnilogicId, attributes)
   }
 
@@ -332,7 +332,7 @@ def createDevice(omnilogicId, name, driverName, attributes) {
 }
 
 def updateDevices() {
-  logMethod('updateDevices')
+  logMethod("updateDevices")
 
   // Delete devices that were unselected
   deleteDevicesExcept(settings.devicesToUse)
@@ -348,7 +348,7 @@ def updateDevices() {
 
       updateDeviceStatuses()
     } catch (e) {
-      logMethod('updateDevices', 'Error updating devices', [e])
+      logMethod("updateDevices", "Error updating devices", [e])
       return false
     }
   }
@@ -357,11 +357,11 @@ def updateDevices() {
 }
 
 def updateDeviceStatuses() {
-  logMethod('updateDeviceStatuses')
+  logMethod("updateDeviceStatuses")
 
   getTelemetryData { telemetryData ->
     childDevices.each { device ->
-      def omnilogicId = device.currentValue('omnilogicId').toInteger()
+      def omnilogicId = device.currentValue("omnilogicId").toInteger()
       def deviceStatus = telemetryData.children().find { it.@systemId?.text().toInteger() == omnilogicId }
       device.parseStatus(deviceStatus, telemetryData)
     }
@@ -369,25 +369,25 @@ def updateDeviceStatuses() {
 }
 
 def deleteDevicesExcept(deviceIds) {
-  logMethod('deleteDevicesExcept', 'Attributes', [deviceIds])
+  logMethod("deleteDevicesExcept", "Attributes", [deviceIds])
 
   childDevices
     .findAll { deviceIds == null || !deviceIds.contains(it.deviceNetworkId) }
     .each {
       try {
         deleteChildDevice(it.deviceNetworkId)
-        logMethod('deleteDevicesExcept', 'Deleted device', [it.deviceNetworkId])
+        logMethod("deleteDevicesExcept", "Deleted device", [it.deviceNetworkId])
       } catch (e) {
-        logMethod('deleteDevicesExcept', 'Error deleting device', [it.deviceNetworkId, e])
+        logMethod("deleteDevicesExcept", "Error deleting device", [it.deviceNetworkId, e])
       }
     }
 }
 
 def login(force, callback) {
-  logMethod('login', 'Arguments', [force])
+  logMethod("login", "Arguments", [force])
 
   if (!force && state.session?.expiration > now()) {
-    logMethod('login', 'Current token is still valid')
+    logMethod("login", "Current token is still valid")
     return callback(true)
   }
 
@@ -398,55 +398,55 @@ def login(force, callback) {
   ]
 
   def parameters = [
-    [name: 'UserName', value: settings.username],
-    [name: 'Password', value: settings.password]
+    [name: "UserName", value: settings.username],
+    [name: "Password", value: settings.password]
   ]
 
-  performApiRequest('Login', parameters) { response ->
+  performApiRequest("Login", parameters) { response ->
     def responseParameters = response?.Parameters?.Parameter
-    if (responseParameters?.find { it.@name == 'Status' }.text() != '0') {
-      logMethod('login', 'Failed')
+    if (responseParameters?.find { it.@name == "Status" }.text() != "0") {
+      logMethod("login", "Failed")
       return callback(false)
     }
 
-    logMethod('login', 'Succeeded')
+    logMethod("login", "Succeeded")
 
-    state.session.token = responseParameters.find { it.@name == 'Token' }.text()
-    state.session.userId = responseParameters.find { it.@name == 'UserID' }.text()
+    state.session.token = responseParameters.find { it.@name == "Token" }.text()
+    state.session.userId = responseParameters.find { it.@name == "UserID" }.text()
     state.session.expiration = now() + 24 * 60 * 60 * 1000 // 24 hours
     return callback(true)
   }
 }
 
 def performApiRequest(name, parameters, callback) {
-  logMethod('performApiRequest', 'Arguments', [name, parameters])
+  logMethod("performApiRequest", "Arguments", [name, parameters])
 
   parameters = parameters ?: []
 
   // Perform login sequence for API requests other than Login itself,
   // to make sure we have a valid token
-  if (name != 'Login') {
+  if (name != "Login") {
     login(false) { success ->
       if (!success) {
         return
       }
     }
 
-    parameters.add(0, [name: 'Token', value: state.session.token])
-    parameters.add(1, [name: 'MspSystemID', dataType: 'int', value: settings.mspId])
+    parameters.add(0, [name: "Token", value: state.session.token])
+    parameters.add(1, [name: "MspSystemID", dataType: "int", value: settings.mspId])
   }
 
   // Perform API request
   def requestXml = formatApiRequest(name, parameters)
-  logMethod('performApiRequest', 'Request', [requestXml])
+  logMethod("performApiRequest", "Request", [requestXml])
 
   httpPost([
-    uri: 'https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx',
-    contentType: 'text/xml',
+    uri: "https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx",
+    contentType: "text/xml",
     body: requestXml,
-    headers: ['Token': state.session.token],
+    headers: ["Token": state.session.token],
   ]) { response ->
-    logMethod('performApiRequest', 'Response', [response.status, response.data])
+    logMethod("performApiRequest", "Response", [response.status, response.data])
 
     if (response.status == 200 && response.data) {
       return callback(response.data)
@@ -458,7 +458,7 @@ def performApiRequest(name, parameters, callback) {
 
 def formatApiRequest(name, parameters) {
   def parameterXml = parameters?.collect {
-    "<Parameter name=\"${it.name}\" dataType=\"${it.dataType ?: 'String'}\">${it.value}</Parameter>\n"
+    "<Parameter name=\"${it.name}\" dataType=\"${it.dataType ?: "String"}\">${it.value}</Parameter>\n"
   }.join().trim()
 
   return """
@@ -473,5 +473,5 @@ def formatApiRequest(name, parameters) {
 }
 
 def getPlatform() {
-  physicalgraph?.device?.HubAction ? 'SmartThings' : 'Hubitat'
+  physicalgraph?.device?.HubAction ? "SmartThings" : "Hubitat"
 }
