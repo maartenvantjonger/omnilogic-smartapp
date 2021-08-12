@@ -413,7 +413,7 @@ def login(force, callback) {
 
     state.session.token = responseParameters.find { it.@name == "Token" }.text()
     state.session.userId = responseParameters.find { it.@name == "UserID" }.text()
-    state.session.expiration = now() + 24 * 60 * 60 * 1000 // 24 hours
+    state.session.expiration = now() + 12 * 60 * 60 * 1000 // 12 hours
     return callback(true)
   }
 }
