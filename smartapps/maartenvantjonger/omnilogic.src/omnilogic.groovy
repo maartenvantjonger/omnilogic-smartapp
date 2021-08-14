@@ -41,6 +41,8 @@ def updated() {
 
 def initialize() {
   logMethod("initialize")
+
+  runEvery15Minutes(updateDeviceStatuses)
 }
 
 def logMethod(method, message = null, arguments = null) {
