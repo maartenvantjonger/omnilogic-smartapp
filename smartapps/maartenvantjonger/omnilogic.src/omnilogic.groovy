@@ -187,7 +187,7 @@ def getTelemetryData(callback) {
 
   // Cache telemetry data for 10 seconds
   if (state.telemetryTimestamp != null && state.telemetryTimestamp + 10000 > now()) {
-    logMethod("getTelemetryData", "Returning cached telemetry data", [state.telemetryTimestamp, state.telemetryData])
+    logMethod("getTelemetryData", "Returning cached telemetry data")
 
     def telemetryData = new XmlSlurper().parseText(state.telemetryData)
     callback(telemetryData)
@@ -202,29 +202,50 @@ def getTelemetryData(callback) {
     state.telemetryTimestamp = now()
     state.telemetryData = groovy.xml.XmlUtil.serialize(response)
 
-    logMethod("getTelemetryData", "Returning telemetry data", [state.telemetryTimestamp, state.telemetryData])
-
-    if (callback != null) {
-      callback(response)
-    }
+    logMethod("getTelemetryData", "Returning telemetry data")
+    callback(response)
   }
 }
 
-def getAvailableDevices() {
-  logMethod("getAvailableDevices")
+def getMspConfig(callback) {
+  logMethod("getMspConfig")
+
+  // Cache MSP Config data for 10 minutes
+  if (state.mspConfigTimestamp != null && state.mspConfigTimestamp + 600000 > now()) {
+    logMethod("getMspConfig", "Returning cached MSP Config data")
+
+    def mspConfig = new XmlSlurper().parseText(state.mspConfig)
+    callback(mspConfig)
+    return
+  }
 
   performApiRequest("RequestConfiguration", null) { response ->
     if (response == null) {
       return
     }
 
-    def availableDevices = [:]
+    state.mspConfigTimestamp = now()
     state.mspConfig = groovy.xml.XmlUtil.serialize(response)
 
-    // Parse available devices from MSP Config
-    response.Backyard.each { addTemperatureSensor(availableDevices, it) }
+    logMethod("getMspConfig", "Returning MSP Config data")
+    callback(response)
+  }
+}
 
-    def bowNodes = response.Backyard."Body-of-water"
+def getAvailableDevices() {
+  logMethod("getAvailableDevices")
+
+  getMspConfig { mspConfig ->
+    if (mspConfig == null) {
+      return
+    }
+
+    def availableDevices = [:]
+
+    // Parse available devices from MSP Config
+    mspConfig.Backyard.each { addTemperatureSensor(availableDevices, it) }
+
+    def bowNodes = mspConfig.Backyard."Body-of-water"
     bowNodes.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addFilter(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
@@ -267,7 +288,8 @@ def addFilter(availableDevices, deviceDefinition) {
   def driverName = deviceDefinition."Filter-Type".text() == "FMT_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
   addDevice(availableDevices, deviceDefinition, "Filter", driverName, null)
 
-  if (deviceDefinition.parent()."Supports-Spillover" == "yes") {
+  def bow = deviceDefinition.parent()
+  if (bow.Type == "BOW_SPA" && bow."Supports-Spillover" == "yes") {
     addDevice(availableDevices, deviceDefinition, "Spillover", driverName, [isSpillover: 1, deviceIdSuffix: "s"])
   }
 }
@@ -289,8 +311,23 @@ def addHeater(availableDevices, deviceDefinition) {
 }
 
 def addChlorinator(availableDevices, deviceDefinition) {
-  addDevice(availableDevices, deviceDefinition, "Chlorinator", "Omnilogic Chlorinator", null)
-  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Chlorinator", [isSuperChlorinator: 1, deviceIdSuffix: "s"])
+  def cellTypes = [
+    "CELL_TYPE_T3": 1,
+    "CELL_TYPE_T5": 2,
+    "CELL_TYPE_T9": 3,
+    "CELL_TYPE_T15": 4
+  ]
+
+  def cellType = cellTypes[deviceDefinition."Cell-Type".text()] ?: 4
+
+  def superChlorinatorAttributes = [
+    cellType: cellType,
+    isSuperChlorinator: 1,
+    deviceIdSuffix: "s"
+  ]
+
+  addDevice(availableDevices, deviceDefinition, "Chlorinator", "Omnilogic Chlorinator", [cellType: cellType])
+  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Chlorinator", superChlorinatorAttributes)
 }
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
@@ -299,6 +336,7 @@ def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) 
 
   attributes = attributes ?: [:]
   attributes.bowId = bowDefinition."System-Id".text()
+  attributes.bowType = bowDefinition.Type.text() == "BOW_SPA" ? 1 : 0
 
   def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
 
@@ -445,8 +483,7 @@ def performApiRequest(name, parameters, callback) {
   httpPost([
     uri: "https://www.haywardomnilogic.com/MobileInterface/MobileInterface.ashx",
     contentType: "text/xml",
-    body: requestXml,
-    headers: ["Token": state.session.token],
+    body: requestXml
   ]) { response ->
     logMethod("performApiRequest", "Response", [response.status, response.data])
 
