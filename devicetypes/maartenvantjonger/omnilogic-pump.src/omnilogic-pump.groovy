@@ -12,8 +12,6 @@ metadata {
     capability "Switch"
     capability "Actuator"
     capability "Refresh"
-    capability "Health Check"
-    capability "Polling"
 
     attribute "bowId", "number"
     attribute "omnilogicId", "number"
@@ -43,16 +41,6 @@ def initialize(omnilogicId, attributes) {
 def refresh() {
 	logMethod("refresh")
   parent.updateDeviceStatuses()
-}
-
-def ping() {
-	logMethod("ping")
-  refresh()
-}
-
-def poll() {
-	logMethod("poll")
-  refresh()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
