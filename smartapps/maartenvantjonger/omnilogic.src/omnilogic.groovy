@@ -320,14 +320,8 @@ def addChlorinator(availableDevices, deviceDefinition) {
 
   def cellType = cellTypes[deviceDefinition."Cell-Type".text()] ?: 4
 
-  def superChlorinatorAttributes = [
-    cellType: cellType,
-    isSuperChlorinator: 1,
-    deviceIdSuffix: "s"
-  ]
-
   addDevice(availableDevices, deviceDefinition, "Chlorinator", "Omnilogic Chlorinator", [cellType: cellType])
-  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Chlorinator", superChlorinatorAttributes)
+  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Super Chlorinator", [deviceIdSuffix: "s"])
 }
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {

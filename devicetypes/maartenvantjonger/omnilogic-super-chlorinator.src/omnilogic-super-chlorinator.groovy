@@ -1,22 +1,19 @@
 /**
- *  Omnilogic Chlorinator
+ *  Omnilogic Super Chlorinator
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Chlorinator",
+    name: "Omnilogic Super Chlorinator",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {
     capability "Switch"
-    capability "Switch Level"
     capability "Actuator"
     capability "Refresh"
 
     attribute "bowId", "number"
-    attribute "bowType", "number"
-    attribute "cellType", "number"
     attribute "omnilogicId", "number"
     attribute "level", "number"
     attribute "operatingState", "number"
@@ -35,12 +32,8 @@ metadata {
       state("on", label: "${name}", action: "off")
     }
 
-    controlTile("level", "device.level", "slider", range: "(1..100)", height: 2, width: 2, canChangeIcon: true, decoration: "flat", inactiveLabel: false) {
-      state "level", action: "setLevel"
-    }
-
     main("switch")
-    details(["switch", "level"])
+    details(["switch"])
   }
 }
 
@@ -49,9 +42,6 @@ def initialize(omnilogicId, attributes) {
 
   sendEvent(name: "omnilogicId", value: omnilogicId, displayed: true)
   sendEvent(name: "bowId", value: attributes["bowId"], displayed: true)
-  sendEvent(name: "bowType", value: attributes["bowType"], displayed: true)
-  sendEvent(name: "cellType", value: attributes["cellType"], displayed: true)
-  sendEvent(name: "level", value: 0, displayed: true)
 }
 
 def refresh() {
@@ -62,11 +52,8 @@ def refresh() {
 def parseStatus(deviceStatus, telemetryData) {
 	logMethod("parseStatus", "Arguments", [deviceStatus])
 
-  def onOff = deviceStatus.@enable.text() == "1" ? "on" : "off"
+  def onOff = deviceStatus.@scMode.text() == "1" ? "on" : "off"
   sendEvent(name: "switch", value: onOff, displayed: true)
-
-  def level = deviceStatus["@Timed-Percent"].text()
-  sendEvent(name: "level", value: level, displayed: true)
 
   def operatingState = deviceStatus.@operatingState.text()
   sendEvent(name: "operatingState", value: operatingState, displayed: true)
@@ -76,7 +63,7 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def status = deviceStatus.@status.text()
   sendEvent(name: "status", value: status, displayed: true)
-
+  
   def scMode = deviceStatus.@scMode.text()
   sendEvent(name: "scMode", value: scMode, displayed: true)
 
@@ -95,56 +82,28 @@ def parseStatus(deviceStatus, telemetryData) {
 
 def on() {
 	logMethod("on")
-  enableChlorinator(true)
+  enableSuperChlorinator(true)
 }
 
 def off() {
 	logMethod("off")
-  enableChlorinator(false)
+  enableSuperChlorinator(false)
 }
 
-def setLevel(level) {
-	logMethod("setLevel", "Arguments", [level])
-  setChlorinatorLevel(level)
-}
-
-def enableChlorinator(enable) {
-	logMethod("enableChlorinator", "Arguments", [enable])
+def enableSuperChlorinator(enable) {
+	logMethod("enableSuperChlorinator", "Arguments", [enable])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
     [name: "ChlorID", dataType: "int", value: device.currentValue("omnilogicId")],
-    [name: "Enabled", dataType: "bool", value: enable]
+    [name: "IsOn", dataType: "int", value: enable ? 1 : 0]
   ]
-  parent.performApiRequest("SetCHLOREnable", parameters) { response ->
+
+  parent.performApiRequest("SetUISuperCHLORCmd", parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == "Status" }.text() == "0"
     if (success) {
       def onOff = enable ? "on" : "off"
       sendEvent(name: "switch", value: onOff, displayed: true, isStateChange: true)
-    }
-  }
-}
-
-def setChlorinatorLevel(level) {
-	logMethod("setChlorinatorLevel", "Arguments", [level])
-
-  def parameters = [
-    [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
-    [name: "ChlorID", dataType: "int", value: device.currentValue("omnilogicId")],
-    [name: "CfgState", dataType: "byte", value: 3],
-    [name: "OpMode", dataType: "byte", value: 1],
-    [name: "BOWType", dataType: "byte", value: device.currentValue("bowType")],
-    [name: "CellType", dataType: "byte", value:  device.currentValue("cellType")],
-    [name: "TimedPercent", dataType: "byte", value: level],
-    [name: "SCTimeout", dataType: "byte", value: 24],
-    [name: "ORPTimout", dataType: "byte", value: 24]
-  ]
-  parent.performApiRequest("SetCHLORParams", parameters) { response ->
-    def success = response.Parameters.Parameter.find { it.@name == "Status" }.text() == "0"
-    if (success) {
-      def onOff = enable ? "on" : "off"
-      sendEvent(name: "switch", value: onOff, displayed: true, isStateChange: true)
-      sendEvent(name: "level", value: level, displayed: true, isStateChange: true)
     }
   }
 }
