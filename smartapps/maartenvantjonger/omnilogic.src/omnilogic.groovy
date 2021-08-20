@@ -78,10 +78,10 @@ def logDebug(message) {
 
   // Escape XML on hubitat to ensure correct rendering in UI
   if (getPlatform() == "Hubitat") {
-    message = groovy.xml.XmlUtil.escapeXml(message)
+    log.debug(groovy.xml.XmlUtil.escapeXml(message))
+  } else {
+    log.debug(message)
   }
-
-  log.debug(message)
 }
 
 def mainPage() {
@@ -132,7 +132,7 @@ def loginResultPage() {
 
 def devicePage() {
   // Get currently installed child devices
-  settings.devicesToUse = childDevices.collect { it.deviceNetworkId }
+  settings.devicesToUse = childDevices*.deviceNetworkId
 
   // Get available devices from Omnilogic
   getAvailableDevices()
@@ -194,7 +194,7 @@ def getTelemetryData(callback) {
     return
   }
 
-  performApiRequest("RequestTelemetryData", null) { response ->
+  performApiRequest("RequestTelemetryData") { response ->
     if (response == null) {
       return
     }
@@ -219,7 +219,7 @@ def getMspConfig(callback) {
     return
   }
 
-  performApiRequest("RequestConfiguration", null) { response ->
+  performApiRequest("RequestConfiguration") { response ->
     if (response == null) {
       return
     }
@@ -286,7 +286,7 @@ def addTemperatureSensor(availableDevices, locationDefinition) {
 
 def addFilter(availableDevices, deviceDefinition) {
   def driverName = deviceDefinition."Filter-Type".text() == "FMT_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
-  addDevice(availableDevices, deviceDefinition, "Filter", driverName, null)
+  addDevice(availableDevices, deviceDefinition, "Filter", driverName)
 
   def bow = deviceDefinition.parent()
   if (bow.Type == "BOW_SPA" && bow."Supports-Spillover" == "yes") {
@@ -296,7 +296,7 @@ def addFilter(availableDevices, deviceDefinition) {
 
 def addPump(availableDevices, deviceDefinition) {
   def driverName = deviceDefinition."Type".text() == "PMP_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
-  addDevice(availableDevices, deviceDefinition, null, driverName, null)
+  addDevice(availableDevices, deviceDefinition, null, driverName)
 }
 
 def addHeater(availableDevices, deviceDefinition) {
@@ -324,14 +324,13 @@ def addChlorinator(availableDevices, deviceDefinition) {
   addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Super Chlorinator", [deviceIdSuffix: "s"])
 }
 
-def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) {
-  def omnilogicId = deviceDefinition."System-Id".text()
+def addDevice(availableDevices, deviceDefinition, name, driverName, attributes = [:]) {
   def bowDefinition = deviceDefinition.parent()
 
-  attributes = attributes ?: [:]
   attributes.bowId = bowDefinition."System-Id".text()
   attributes.bowType = bowDefinition.Type.text() == "BOW_SPA" ? 1 : 0
 
+  def omnilogicId = deviceDefinition."System-Id".text()
   def deviceId = getDeviceId(omnilogicId, attributes.deviceIdSuffix)
 
   availableDevices[deviceId] = [
@@ -347,8 +346,7 @@ def addDevice(availableDevices, deviceDefinition, name, driverName, attributes) 
 }
 
 def getDeviceId(omnilogicId, deviceIdSuffix) {
-  deviceIdSuffix = deviceIdSuffix ?: ""
-  return "omnilogic-${omnilogicId}${deviceIdSuffix}"
+  return "omnilogic-${omnilogicId}${deviceIdSuffix ?: ""}"
 }
 
 def createDevice(omnilogicId, name, driverName, attributes) {
@@ -452,10 +450,8 @@ def login(force, callback) {
   }
 }
 
-def performApiRequest(name, parameters, callback) {
+def performApiRequest(name, parameters = [], callback) {
   logMethod("performApiRequest", "Arguments", [name, parameters])
-
-  parameters = parameters ?: []
 
   // Perform login sequence for API requests other than Login itself,
   // to make sure we have a valid token

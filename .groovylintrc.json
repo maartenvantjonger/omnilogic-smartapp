@@ -31,6 +31,9 @@
         "LineLength": {
             "enabled": false
         },
+        "MethodCount": {
+            "enabled": false
+        },
         "MethodParameterTypeRequired": {
             "enabled": false
         },
@@ -41,6 +44,9 @@
             "enabled": false
         },
         "NoDef": {
+            "enabled": false
+        },
+        "UnnecessaryGString": {
             "enabled": false
         },
         "UnnecessaryGetter": {
