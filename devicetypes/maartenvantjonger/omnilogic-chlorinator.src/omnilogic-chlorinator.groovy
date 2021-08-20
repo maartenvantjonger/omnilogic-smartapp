@@ -17,6 +17,8 @@ metadata {
     capability "Polling"
 
     attribute "bowId", "number"
+    attribute "bowType", "number"
+    attribute "cellType", "number"
     attribute "omnilogicId", "number"
     attribute "level", "number"
     attribute "operatingState", "number"
@@ -50,6 +52,8 @@ def initialize(omnilogicId, attributes) {
 
   sendEvent(name: "omnilogicId", value: omnilogicId, displayed: true)
   sendEvent(name: "bowId", value: attributes["bowId"], displayed: true)
+  sendEvent(name: "bowType", value: attributes["bowType"], displayed: true)
+  sendEvent(name: "cellType", value: attributes["cellType"], displayed: true)
   sendEvent(name: "isSuperChlorinator", value: attributes["isSuperChlorinator"], displayed: true)
 
   if (!getIsSuperChlorinator()) {
@@ -165,8 +169,8 @@ def setChlorinatorLevel(level) {
     [name: "ChlorID", dataType: "int", value: device.currentValue("omnilogicId")],
     [name: "CfgState", dataType: "byte", value: 3],
     [name: "OpMode", dataType: "byte", value: 1],
-    [name: "BOWType", dataType: "byte", value: 1],
-    [name: "CellType", dataType: "byte", value: 3],
+    [name: "BOWType", dataType: "byte", value: device.currentValue("bowType")],
+    [name: "CellType", dataType: "byte", value:  device.currentValue("cellType")],
     [name: "TimedPercent", dataType: "byte", value: level],
     [name: "SCTimeout", dataType: "byte", value: 24],
     [name: "ORPTimout", dataType: "byte", value: 24]
