@@ -274,7 +274,7 @@ def addTemperatureSensor(availableDevices, locationDefinition) {
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: "${locationDefinition.Name.text()} Temperature",
+    name: locationDefinition.Name.text(),
     driverName: "Omnilogic Temperature Sensor",
     attributes: [
       bowId: bowId,
