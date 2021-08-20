@@ -33,13 +33,14 @@ metadata {
 
 def initialize(omnilogicId, attributes) {
   logMethod("initialize", "Arguments", [omnilogicId, attributes])
+
   sendEvent(name: "omnilogicId", value: omnilogicId, displayed: true)
   sendEvent(name: "bowId", value: attributes["bowId"], displayed: true)
   sendEvent(name: "isSpillover", value: attributes["isSpillover"], displayed: true)
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
@@ -59,12 +60,12 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-	logMethod("on")
+  logMethod("on")
   setState(true)
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   setState(false)
 }
 
@@ -79,7 +80,7 @@ def setState(enabled) {
 }
 
 def setPumpState(enabled) {
-	logMethod("setPumpState", "Arguments", [enabled])
+    logMethod("setPumpState", "Arguments", [enabled])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],

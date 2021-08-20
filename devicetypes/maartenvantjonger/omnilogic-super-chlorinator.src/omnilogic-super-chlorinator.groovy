@@ -45,12 +45,12 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	logMethod("parseStatus", "Arguments", [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
 
   def onOff = deviceStatus.@scMode.text() == "1" ? "on" : "off"
   sendEvent(name: "switch", value: onOff, displayed: true)
@@ -63,7 +63,7 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def status = deviceStatus.@status.text()
   sendEvent(name: "status", value: status, displayed: true)
-  
+
   def scMode = deviceStatus.@scMode.text()
   sendEvent(name: "scMode", value: scMode, displayed: true)
 
@@ -81,17 +81,17 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-	logMethod("on")
+  logMethod("on")
   enableSuperChlorinator(true)
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   enableSuperChlorinator(false)
 }
 
 def enableSuperChlorinator(enable) {
-	logMethod("enableSuperChlorinator", "Arguments", [enable])
+  logMethod("enableSuperChlorinator", "Arguments", [enable])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],

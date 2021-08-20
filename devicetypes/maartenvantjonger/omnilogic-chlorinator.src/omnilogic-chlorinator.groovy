@@ -55,12 +55,12 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	logMethod("parseStatus", "Arguments", [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
 
   def onOff = deviceStatus.@enable.text() == "1" ? "on" : "off"
   sendEvent(name: "switch", value: onOff, displayed: true)
@@ -94,22 +94,22 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-	logMethod("on")
+  logMethod("on")
   enableChlorinator(true)
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   enableChlorinator(false)
 }
 
 def setLevel(level) {
-	logMethod("setLevel", "Arguments", [level])
+  logMethod("setLevel", "Arguments", [level])
   setChlorinatorLevel(level)
 }
 
 def enableChlorinator(enable) {
-	logMethod("enableChlorinator", "Arguments", [enable])
+  logMethod("enableChlorinator", "Arguments", [enable])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
@@ -126,7 +126,7 @@ def enableChlorinator(enable) {
 }
 
 def setChlorinatorLevel(level) {
-	logMethod("setChlorinatorLevel", "Arguments", [level])
+  logMethod("setChlorinatorLevel", "Arguments", [level])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],

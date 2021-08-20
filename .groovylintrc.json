@@ -52,6 +52,12 @@
         "UnnecessaryGetter": {
             "enabled": false
         },
+        "UnnecessarySetter": {
+            "enabled": false
+        },
+        "UnusedMethodParameter": {
+            "enabled": false
+        },
         "VariableTypeRequired": {
             "enabled": false
         }

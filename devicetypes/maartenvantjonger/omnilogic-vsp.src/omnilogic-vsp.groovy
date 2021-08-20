@@ -35,12 +35,12 @@ metadata {
       state("on", label: "${name}", action: "off")
     }
 
-		standardTile("fanSpeed", "device.fanSpeed", width: 6, height: 4, canChangeIcon: true, decoration: "flat") {
+        standardTile("fanSpeed", "device.fanSpeed", width: 6, height: 4, canChangeIcon: true, decoration: "flat") {
       state("0", label: "off", action: "switch.on", icon: "st.thermostat.fan-off")
       state("1", label: "low", action: "switch.off", icon: "st.thermostat.fan-on")
       state("2", label: "medium", action: "switch.off", icon: "st.thermostat.fan-on")
       state("3", label: "high", action: "switch.off", icon: "st.thermostat.fan-on")
-		}
+        }
 
     main("switch")
     details(["switch", "fanSpeed"])

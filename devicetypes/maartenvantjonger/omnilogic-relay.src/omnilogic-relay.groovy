@@ -34,28 +34,29 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	logMethod("parseStatus", "Arguments", [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
+
   def onOff = deviceStatus?.@relayState?.text() == "1" ? "on" : "off"
   sendEvent(name: "switch", value: onOff, displayed: true)
 }
 
 def on() {
-	logMethod("on")
+  logMethod("on")
   setRelayState(true)
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   setRelayState(false)
 }
 
 def setRelayState(isOn) {
-	logMethod("setRelayState", "Arguments", [isOn])
+  logMethod("setRelayState", "Arguments", [isOn])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],

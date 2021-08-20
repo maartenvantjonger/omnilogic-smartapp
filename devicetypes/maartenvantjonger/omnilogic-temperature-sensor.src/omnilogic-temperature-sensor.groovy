@@ -60,12 +60,12 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	logMethod("parseStatus", "Arguments", [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
 
   def temperature = device.currentValue("sensorType") == "water" ?
     deviceStatus?.@waterTemp?.text() : deviceStatus?.@airTemp?.text()

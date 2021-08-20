@@ -66,12 +66,12 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
 def parseStatus(deviceStatus, telemetryData) {
-	logMethod("parseStatus", "Arguments", [deviceStatus])
+  logMethod("parseStatus", "Arguments", [deviceStatus])
 
   def enabled = deviceStatus.@enable.text() == "yes"
   sendEvent(name: "switch", value: enabled ? "on" : "off", displayed: true)
@@ -79,7 +79,7 @@ def parseStatus(deviceStatus, telemetryData) {
 
   def heatingSetpoint = deviceStatus["@Current-Set-Point"].text().toInteger()
   def heatingSetpointInHubUnit = convertTemperatureToHubUnit(heatingSetpoint)
-  def hubTemperatureUnit =getTemperatureScale()
+  def hubTemperatureUnit = getTemperatureScale()
 
   sendEvent(name: "heatingSetpoint", value: heatingSetpointInHubUnit, unit: hubTemperatureUnit, displayed: true)
   sendEvent(name: "thermostatSetpoint", value: heatingSetpointInHubUnit, unit: hubTemperatureUnit, displayed: true)
@@ -104,7 +104,7 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def setThermostatMode(thermostatMode) {
-	logMethod("setThermostatMode", "Arguments", [thermostatMode])
+  logMethod("setThermostatMode", "Arguments", [thermostatMode])
   enableHeater(thermostatMode == "heat")
 }
 
@@ -119,7 +119,7 @@ def on() {
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   enableHeater(false)
 }
 
@@ -129,11 +129,11 @@ def fanAuto() {
 }
 
 def setThermostatFanMode(fanMode) {
-	sendEvent(name: "thermostatFanMode", value: fanMode, displayed: true)
+  sendEvent(name: "thermostatFanMode", value: fanMode, displayed: true)
 }
 
 def enableHeater(enable) {
-	logMethod("enableHeater", "Arguments", [enable])
+  logMethod("enableHeater", "Arguments", [enable])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
@@ -167,15 +167,15 @@ def setHeatingSetpoint(temperature) {
     if (success) {
       def hubTemperatureUnit = getTemperatureScale()
       def temperatureInHubUnit = convertTemperatureToHubUnit(temperature)
-      sendEvent(name: "heatingSetpoint", value: temperature, unit: hubTemperatureUnit, displayed: true, isStateChange: true)
-      sendEvent(name: "thermostatSetpoint", value: temperature, unit: hubTemperatureUnit, displayed: true, isStateChange: true)
+      sendEvent(name: "heatingSetpoint", value: temperatureInHubUnit, unit: hubTemperatureUnit, displayed: true, isStateChange: true)
+      sendEvent(name: "thermostatSetpoint", value: temperatureInHubUnit, unit: hubTemperatureUnit, displayed: true, isStateChange: true)
     }
   }
 }
 
 def convertTemperatureToHubUnit(temperature, deviceTemperatureUnit = null) {
-  deviceTemperatureUnit = deviceTemperatureUnit ?: device.currentValue("temperatureUnit")
-  return convertTemperatureIfNeeded(temperature?.toBigDecimal(), deviceTemperatureUnit, 0)
+  def temperatureUnit = deviceTemperatureUnit ?: device.currentValue("temperatureUnit")
+  return convertTemperatureIfNeeded(temperature?.toBigDecimal(), temperatureUnit, 0)
 }
 
 def convertTemperatureToDeviceUnit(temperature) {

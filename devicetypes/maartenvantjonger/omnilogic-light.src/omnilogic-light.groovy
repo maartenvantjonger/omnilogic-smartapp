@@ -37,7 +37,7 @@ def initialize(omnilogicId, attributes) {
 }
 
 def refresh() {
-	logMethod("refresh")
+  logMethod("refresh")
   parent.updateDeviceStatuses()
 }
 
@@ -54,17 +54,17 @@ def parseStatus(deviceStatus, telemetryData) {
 }
 
 def on() {
-	logMethod("on")
+  logMethod("on")
   setLightState(true)
 }
 
 def off() {
-	logMethod("off")
+  logMethod("off")
   setLightState(false)
 }
 
 def setLightState(isOn) {
-	logMethod("setLightState", "Arguments", [isOn])
+  logMethod("setLightState", "Arguments", [isOn])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
@@ -89,7 +89,7 @@ def setLightState(isOn) {
 }
 
 def setLightShow(show, speed, brightness) {
-	logMethod("setLightShow", "Arguments", [show, speed, brightness])
+  logMethod("setLightShow", "Arguments", [show, speed, brightness])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
