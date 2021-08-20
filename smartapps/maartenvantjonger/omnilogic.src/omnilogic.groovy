@@ -260,8 +260,8 @@ def getAvailableDevices() {
   }
 }
 
-def addTemperatureSensor(availableDevices, deviceDefinition) {
-  def omnilogicId = deviceDefinition."System-Id".text()
+def addTemperatureSensor(availableDevices, locationDefinition) {
+  def omnilogicId = locationDefinition."System-Id".text()
   def bowId = omnilogicId
 
   // Use MSP ID for Backyard Air Temperature Sensor so we can update it using telemetry data
@@ -274,12 +274,12 @@ def addTemperatureSensor(availableDevices, deviceDefinition) {
 
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
-    name: deviceDefinition.Name.text(),
+    name: "${locationDefinition.Name.text()} Temperature"
     driverName: "Omnilogic Temperature Sensor",
     attributes: [
       bowId: bowId,
-      sensorType: deviceDefinition.Sensor.Type.text(),
-      temperatureUnit: deviceDefinition.Sensor.Units.text()
+      sensorType: locationDefinition.Sensor.Type.text(),
+      temperatureUnit: locationDefinition.Sensor.Units.text()
     ]
   ]
 }
