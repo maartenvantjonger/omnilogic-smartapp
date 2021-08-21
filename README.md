@@ -1,4 +1,4 @@
-# Hayward Omnilogic smartapp for use with Samsung Smartthings and Hubitat
+# Hayward OmniLogic smartapp for use with Samsung Smartthings and Hubitat
 
 ## Introduction
 
@@ -51,18 +51,17 @@ In Hubitat, go to *Bundles -> Import ZIP*, and import **omnilogic-v1.0.zip**
 In Smartthings:
 - Log in to https://consigliere-regional.api.smartthings.com
 - Go to *My SmartApps* and click *New SmartApp*
-- Click the *From Code* tab and copy/paste the contents of the OmniLogic smartapp: https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/smartapps/maartenvantjonger/omnilogic.src/omnilogic.groovy
+- Click the *From Code* tab and copy/paste the contents of the OmniLogic smartapp: [OmniLogic Smartapp](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/smartapps/maartenvantjonger/omnilogic.src/omnilogic.groovy)
 - Click *Create* and then *Publish -> For Me*
 - Go to *My Device Handlers* and click *Create New Device Handler* and perform the same steps for all device handlers:
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-vsp.src/omnilogic-vsp.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-temperature-sensor.src/omnilogic-temperature-sensor.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-super-chlorinator.src/omnilogic-super-chlorinator.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-relay.src/omnilogic-relay.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-pump.src/omnilogic-pump.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-light.src/omnilogic-light.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-heater.src/omnilogic-heater.groovy
-- https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-chlorinator.src/omnilogic-chlorinator.groovy
-
+[OmniLogic VSP](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-vsp.src/omnilogic-vsp.groovy)
+[OmniLogic Pump](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-pump.src/omnilogic-pump.groovy)
+[OmniLogic Chlorinator](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-chlorinator.src/omnilogic-chlorinator.groovy)
+[OmniLogic Super Chlorinator](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-super-chlorinator.src/omnilogic-super-chlorinator.groovy)
+[OmniLogic Relay](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-relay.src/omnilogic-relay.groovy)
+[OmniLogic Light](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-light.src/omnilogic-light.groovy)
+[OmniLogic Relay](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-heater.src/omnilogic-heater.groovy)
+[OmniLogic Temperature Sensor](https://raw.githubusercontent.com/maartenvantjonger/omnilogic-smartapp/main/devicetypes/maartenvantjonger/omnilogic-temperature-sensor.src/omnilogic-temperature-sensor.groovy)
 
 ## Configuration
 
@@ -77,12 +76,12 @@ In Smartthings:
 
 - The smartapp updates device statuses every 15 minutes. During those 15 minutes, device on/off statuses may show incorrectly in case you have your pool equipment on a schedule or if you're using the Hayward app or website to control the equipment on the side.
 
-- In the Google Home UI, thermostats cannot be set beyond 90 degrees Fahrenheit. However, you can still say *Hey Google, set Spa Heater to 104 degrees*
+- In the Google Home app, thermostats cannot be set beyond 90 degrees Fahrenheit. To get around this limitation, you can still say *Hey Google, set Spa Heater to 104 degrees*.
 Another workaround is to set the temperature in the Hub's app or website or in the Hayward OmniLogic app, and only using Google Home to turn the heater on and off.
 
 #### In Hubitat
 
-There are some limitations and quirks with Hubitat's Google Home integration, but all issues below can be worked around by using Hubitat's Google Home Community smartapp instead of Hubitat's built-in Google Home smartapp.
+There are some limitations and quirks with Hubitat's Google Home integration, but all issues below can be worked around by using the Google Home Community smartapp instead of Hubitat's built-in Google Home smartapp.
 
 - Variable Speed Pumps and chrorinators will be exposed to Google Home as lights instead of *Switch Level*s.
 
@@ -93,6 +92,4 @@ There are some limitations and quirks with Hubitat's Google Home integration, bu
 
 ## Notes
 
-I hope this makes a few of you happy and I'm open to feedback and suggestions.
-For developers: All pull requests into the develop branch of the git repository will be considered.
-https://github.com/maartenvantjonger/omnilogic-smartapp
+I'm open to all feedback and suggestion. For developers: All pull requests into the develop branch of the git repository will be considered.
