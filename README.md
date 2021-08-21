@@ -36,7 +36,7 @@ Depending on device names:
 - *Hey Google, turn on Spa Spillover*
 
 Note: Light and Relay devices have not been tested. I put my pool light on a zigbee switch last year so I haven't been able to try it out. If you use either of these devices, please let me know if they work.
-If haven't tested this with Amazon Alexa.
+If haven't tested this with Amazon Echo devices since I don't own any, but I'm curious to hear what works and what doesn't.
 
 
 ## Installation
@@ -80,7 +80,7 @@ In Smartthings:
 - In the Google Home UI, thermostats cannot be set beyond 90 degrees Fahrenheit. However, you can still say *Hey Google, set Spa Heater to 104 degrees*
 Another workaround is to set the temperature in the Hub's app or website or in the Hayward OmniLogic app, and only using Google Home to turn the heater on and off.
 
-**In Hubitat**
+#### In Hubitat
 
 There are some limitations and quirks with Hubitat's Google Home integration, but all issues below can be worked around by using Hubitat's Google Home Community smartapp instead of Hubitat's built-in Google Home smartapp.
 
