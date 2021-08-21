@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Light
+ *  OmniLogic Light
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Light",
+    name: "OmniLogic Light",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Relay
+ *  OmniLogic Relay
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Relay",
+    name: "OmniLogic Relay",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {
