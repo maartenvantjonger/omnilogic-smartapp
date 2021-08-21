@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Heater
+ *  OmniLogic Heater
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Heater",
+    name: "OmniLogic Heater",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

@@ -1,11 +1,11 @@
 /**
- *  Omnilogic VSP (Variable Speed Pump)
+ *  OmniLogic VSP (Variable Speed Pump)
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition(
-    name: "Omnilogic VSP",
+    name: "OmniLogic VSP",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Pump
+ *  OmniLogic Pump
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Pump",
+    name: "OmniLogic Pump",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

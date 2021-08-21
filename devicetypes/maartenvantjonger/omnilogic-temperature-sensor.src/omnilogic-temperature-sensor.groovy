@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Temperature Sensor
+ *  OmniLogic Temperature Sensor
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition(
-    name: "Omnilogic Temperature Sensor",
+    name: "OmniLogic Temperature Sensor",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

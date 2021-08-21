@@ -1,11 +1,11 @@
 /**
- *  Omnilogic Super Chlorinator
+ *  OmniLogic Super Chlorinator
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
-    name: "Omnilogic Super Chlorinator",
+    name: "OmniLogic Super Chlorinator",
     namespace: "maartenvantjonger",
     author: "Maarten van Tjonger"
   ) {

@@ -1,13 +1,13 @@
 /**
- *  Omnilogic Smartapp
+ *  OmniLogic Smartapp
  *
  *  Copyright 2021 Maarten van Tjonger
  */
 definition(
-  name: "Omnilogic",
+  name: "OmniLogic",
   namespace: "maartenvantjonger",
   author: "Maarten van Tjonger",
-  description: "Integrate Omnilogic pool equipment",
+  description: "Hayward OmniLogic pool equipment integration",
   category: "Convenience",
   iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
   iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
@@ -15,12 +15,12 @@ definition(
 )
 
 preferences {
-  page(name: "mainPage", title: "Omnilogic settings", install: true, uninstall: true)
-  page(name: "loginPage", title: "Omnilogic account")
-  page(name: "loginResultPage", title: "Omnilogic account")
-  page(name: "devicePage", title: "Omnilogic devices")
-  page(name: "deviceResultPage", title: "Omnilogic devices")
-  page(name: "telemetryPage", title: "Omnilogic telemetry")
+  page(name: "mainPage", title: "OmniLogic settings", install: true, uninstall: true)
+  page(name: "loginPage", title: "OmniLogic account")
+  page(name: "loginResultPage", title: "OmniLogic account")
+  page(name: "devicePage", title: "OmniLogic devices")
+  page(name: "deviceResultPage", title: "OmniLogic devices")
+  page(name: "telemetryPage", title: "OmniLogic telemetry")
 }
 
 def installed() {
@@ -104,10 +104,10 @@ def mainPage() {
 
 def loginPage() {
   return dynamicPage(name: "loginPage", nextPage: "loginResultPage") {
-    section("Enter your Omnilogic account credentials") {
+    section("Enter your OmniLogic account credentials") {
       input("username", "email", title: "Username", description: "")
       input("password", "password", title: "Password", description: "")
-      input("mspId", "text", title: "MSP System ID", description: "The MSP (Main System Processor) System ID of your Omnilogic pool controller")
+      input("mspId", "text", title: "MSP System ID", description: "The MSP (Main System Processor) System ID of your OmniLogic pool controller")
     }
   }
 }
@@ -134,7 +134,7 @@ def devicePage() {
   // Get currently installed child devices
   settings.devicesToUse = childDevices*.deviceNetworkId
 
-  // Get available devices from Omnilogic
+  // Get available devices from OmniLogic
   getAvailableDevices()
   def availableDeviceNames = state.availableDevices.collectEntries { [it.key, "${it.value.name} (${it.value.driverName})"] }
 
@@ -163,7 +163,7 @@ def deviceResultPage() {
 
   return dynamicPage(name: "deviceResultPage", nextPage: "mainPage") {
     section {
-      paragraph updated ? "Updated devices" : "Failed to create devices. Make sure all Omnilogic Device Handlers are installed"
+      paragraph updated ? "Updated devices" : "Failed to create devices. Make sure all OmniLogic Device Handlers are installed"
     }
   }
 }
@@ -251,8 +251,8 @@ def getAvailableDevices() {
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Heater.each { addHeater(availableDevices, it) }
     bowNodes.Chlorinator.each { addChlorinator(availableDevices, it) }
-    bowNodes.Relay.each { addDevice(availableDevices, it, null, "Omnilogic Relay") }
-    bowNodes."ColorLogic-Light".each { addDevice(availableDevices, it, null, "Omnilogic Light") }
+    bowNodes.Relay.each { addDevice(availableDevices, it, null, "OmniLogic Relay") }
+    bowNodes."ColorLogic-Light".each { addDevice(availableDevices, it, null, "OmniLogic Light") }
 
     state.availableDevices = availableDevices
 
@@ -275,7 +275,7 @@ def addTemperatureSensor(availableDevices, locationDefinition) {
   availableDevices[deviceId] = [
     omnilogicId: omnilogicId,
     name: locationDefinition.Name.text(),
-    driverName: "Omnilogic Temperature Sensor",
+    driverName: "OmniLogic Temperature Sensor",
     attributes: [
       bowId: bowId,
       sensorType: locationDefinition.Sensor.Type.text(),
@@ -285,7 +285,7 @@ def addTemperatureSensor(availableDevices, locationDefinition) {
 }
 
 def addFilter(availableDevices, deviceDefinition) {
-  def driverName = deviceDefinition."Filter-Type".text() == "FMT_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
+  def driverName = deviceDefinition."Filter-Type".text() == "FMT_VARIABLE_SPEED_PUMP" ? "OmniLogic VSP" : "OmniLogic Pump"
   addDevice(availableDevices, deviceDefinition, "Filter", driverName)
 
   def bow = deviceDefinition.parent()
@@ -295,7 +295,7 @@ def addFilter(availableDevices, deviceDefinition) {
 }
 
 def addPump(availableDevices, deviceDefinition) {
-  def driverName = deviceDefinition."Type".text() == "PMP_VARIABLE_SPEED_PUMP" ? "Omnilogic VSP" : "Omnilogic Pump"
+  def driverName = deviceDefinition."Type".text() == "PMP_VARIABLE_SPEED_PUMP" ? "OmniLogic VSP" : "OmniLogic Pump"
   addDevice(availableDevices, deviceDefinition, null, driverName)
 }
 
@@ -307,7 +307,7 @@ def addHeater(availableDevices, deviceDefinition) {
     temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
   ]
 
-  addDevice(availableDevices, deviceDefinition, "Heater", "Omnilogic Heater", attributes)
+  addDevice(availableDevices, deviceDefinition, "Heater", "OmniLogic Heater", attributes)
 }
 
 def addChlorinator(availableDevices, deviceDefinition) {
@@ -320,8 +320,8 @@ def addChlorinator(availableDevices, deviceDefinition) {
 
   def cellType = cellTypes[deviceDefinition."Cell-Type".text()] ?: 4
 
-  addDevice(availableDevices, deviceDefinition, "Chlorinator", "Omnilogic Chlorinator", [cellType: cellType])
-  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "Omnilogic Super Chlorinator", [deviceIdSuffix: "s"])
+  addDevice(availableDevices, deviceDefinition, "Chlorinator", "OmniLogic Chlorinator", [cellType: cellType])
+  addDevice(availableDevices, deviceDefinition, "Super Chlorinator", "OmniLogic Super Chlorinator", [deviceIdSuffix: "s"])
 }
 
 def addDevice(availableDevices, deviceDefinition, name, driverName, attributes = [:]) {
