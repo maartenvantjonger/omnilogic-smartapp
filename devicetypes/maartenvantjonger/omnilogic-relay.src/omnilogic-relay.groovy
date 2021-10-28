@@ -61,7 +61,7 @@ def setRelayState(isOn) {
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
     [name: "EquipmentID", dataType: "int", value: device.currentValue("omnilogicId")],
-    [name: "IsOn", dataType: "int", value: isOn ? 100 : 0],
+    [name: "IsOn", dataType: "int", value: isOn ? 1 : 0],
     [name: "IsCountDownTimer", dataType: "bool", value: false],
     [name: "StartTimeHours", dataType: "int", value: 0],
     [name: "StartTimeMinutes", dataType: "int", value: 0],
