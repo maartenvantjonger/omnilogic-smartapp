@@ -110,8 +110,7 @@ def setLightShow(show, speed, brightness) {
   parent.performApiRequest("SetStandAloneLightShow", parameters) { response ->
     def success = response.Parameters.Parameter.find { it.@name == "Status" }.text() == "0"
     if (success) {
-      def onOff = isOn ? "on" : "off"
-      sendEvent(name: "switch", value: onOff, displayed: true, isStateChange: true)
+      sendEvent(name: "switch", value: "on", displayed: true, isStateChange: true)
     }
   }
 }
