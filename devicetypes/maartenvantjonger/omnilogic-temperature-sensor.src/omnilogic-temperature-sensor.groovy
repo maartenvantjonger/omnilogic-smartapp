@@ -48,8 +48,10 @@ metadata {
 def initialize(omnilogicId, attributes) {
   logMethod("initialize", "Arguments", [omnilogicId, attributes])
 
-  def sensorType = attributes["sensorType"] == "SENSOR_WATER_TEMP" ? "water" : "air"
-  def deviceTemperatureUnit = attributes["temperatureUnit"] == "UNITS_FAHRENHEIT" ? "F" : "C"
+  // Using .contains() because sensorType can contain multiple concatenated sensor types like SENSOR_WATER_TEMPSENSOR_FLOW
+  // and temperatureUnit will contain the unit of the secondary sensor type like UNITS_FAHRENHEITUNITS_ACTIVE_INACTIVE
+  def sensorType = attributes["sensorType"].contains("SENSOR_WATER_TEMP") ? "water" : "air"
+  def deviceTemperatureUnit = attributes["temperatureUnit"].contains("UNITS_FAHRENHEIT") ? "F" : "C"
   def hubTemperatureUnit = getTemperatureScale()
 
   sendEvent(name: "omnilogicId", value: omnilogicId, displayed: true)
