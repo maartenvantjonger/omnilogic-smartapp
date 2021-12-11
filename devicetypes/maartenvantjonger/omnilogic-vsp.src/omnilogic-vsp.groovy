@@ -7,7 +7,8 @@ metadata {
   definition(
     name: "OmniLogic VSP",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "oic.d.watervalve"
   ) {
     capability "Switch"
     capability "Switch Level"

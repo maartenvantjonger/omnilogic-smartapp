@@ -7,7 +7,8 @@ metadata {
   definition (
     name: "OmniLogic Heater",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "oic.d.thermostat"
   ) {
     capability "Sensor"
     capability "Actuator"

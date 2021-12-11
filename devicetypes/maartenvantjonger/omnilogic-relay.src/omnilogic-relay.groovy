@@ -7,7 +7,8 @@ metadata {
   definition (
     name: "OmniLogic Relay",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "x.com.st.d.irrigation"
   ) {
     capability "Switch"
     capability "Actuator"

@@ -7,7 +7,8 @@ metadata {
   definition (
     name: "OmniLogic Super Chlorinator",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "oic.d.washer"
   ) {
     capability "Switch"
     capability "Actuator"
