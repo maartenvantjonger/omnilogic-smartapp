@@ -42,7 +42,9 @@ def updated() {
 def initialize() {
   logMethod("initialize")
 
-  runEvery15Minutes(updateDeviceStatuses)
+  if (enableTelemetry) {
+    runEvery15Minutes(updateDeviceStatuses)
+  }
 }
 
 def logMethod(method, message = null, arguments = null) {
@@ -96,8 +98,9 @@ def mainPage() {
       href "telemetryPage", title: "Telemetry", description: "View system status"
     }
 
-    section("Logging") {
+    section("Settings") {
       input name: "enableLogging", type: "bool", title: "Enable debug logging", defaultValue: false
+      input name: "enableTelemetry", type: "bool", title: "Enable periodic telemetry updates", defaultValue: true
     }
   }
 }
