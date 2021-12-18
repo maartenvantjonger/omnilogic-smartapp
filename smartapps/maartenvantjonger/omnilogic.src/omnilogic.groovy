@@ -246,10 +246,12 @@ def getAvailableDevices() {
     def availableDevices = [:]
 
     // Parse available devices from MSP Config
-    mspConfig.Backyard.each { addTemperatureSensor(availableDevices, it) }
+    def backyardNodes = mspConfig.Backyard
+    backyardNodes.Sensor.each { addTemperatureSensor(availableDevices, it) }
+    backyardNodes.Relay.each { addDevice(availableDevices, it, null, "OmniLogic Relay") }
 
-    def bowNodes = mspConfig.Backyard."Body-of-water"
-    bowNodes.each { addTemperatureSensor(availableDevices, it) }
+    def bowNodes = backyardNodes."Body-of-water"
+    bowNodes.Sensor.each { addTemperatureSensor(availableDevices, it) }
     bowNodes.Filter.each { addFilter(availableDevices, it) }
     bowNodes.Pump.each { addPump(availableDevices, it) }
     bowNodes.Heater.each { addHeater(availableDevices, it) }
@@ -263,14 +265,20 @@ def getAvailableDevices() {
   }
 }
 
-def addTemperatureSensor(availableDevices, locationDefinition) {
-  def omnilogicId = locationDefinition."System-Id".text()
-  def bowId = omnilogicId
+def addTemperatureSensor(availableDevices, deviceDefinition) {
+  // Only add water or air temperature sensors
+  def sensorType = deviceDefinition.Type.text()
+  if (!sensorType.contains("SENSOR_WATER_TEMP") && !sensorType.contains("SENSOR_AIR_TEMP")) {
+    return
+  }
+
+  def locationDefinition = deviceDefinition.parent()
+  def locationId = locationDefinition."System-Id".text()
+  def omnilogicId = locationId
 
   // Use MSP ID for Backyard Air Temperature Sensor so we can update it using telemetry data
   if (omnilogicId == "0") {
     omnilogicId = settings.mspId
-    bowId = null
   }
 
   def deviceId = getDeviceId(omnilogicId, null)
@@ -280,9 +288,9 @@ def addTemperatureSensor(availableDevices, locationDefinition) {
     name: locationDefinition.Name.text(),
     driverName: "OmniLogic Temperature Sensor",
     attributes: [
-      bowId: bowId,
-      sensorType: locationDefinition.Sensor.Type.text(),
-      temperatureUnit: locationDefinition.Sensor.Units.text()
+      bowId: locationId,
+      sensorType: sensorType,
+      temperatureUnit: deviceDefinition.Units.text()
     ]
   ]
 }
@@ -303,11 +311,13 @@ def addPump(availableDevices, deviceDefinition) {
 }
 
 def addHeater(availableDevices, deviceDefinition) {
+  def temperatureSensorDefinition = deviceDefinition.parent().Sensor.find { it.Type.text().contains("SENSOR_WATER_TEMP") }
+
   def attributes = [
     omnilogicHeaterId: deviceDefinition.Operation.find { it.name() == "Heater-Equipment" }."System-Id".text(),
     minTemperature: deviceDefinition."Min-Settable-Water-Temp".text().toInteger(),
     maxTemperature: deviceDefinition."Max-Settable-Water-Temp".text().toInteger(),
-    temperatureUnit: deviceDefinition.parent().Sensor?.Units?.text()
+    temperatureUnit: temperatureSensorDefinition.Units.text()
   ]
 
   addDevice(availableDevices, deviceDefinition, "Heater", "OmniLogic Heater", attributes)
