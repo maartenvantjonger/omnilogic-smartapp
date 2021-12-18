@@ -40,7 +40,8 @@ metadata {
 def initialize(omnilogicId, attributes) {
   logMethod("initialize", "Arguments", [omnilogicId, attributes])
 
-  def deviceTemperatureUnit = attributes.temperatureUnit == "UNITS_FAHRENHEIT" ? "F" : "C"
+  // Using .contains() because temperatureUnit can contain the unit of the secondary sensor type like UNITS_FAHRENHEITUNITS_ACTIVE_INACTIVE
+  def deviceTemperatureUnit = attributes.temperatureUnit.contains("UNITS_FAHRENHEIT") ? "F" : "C"
   def hubTemperatureUnit = getTemperatureScale()
   def setpointRange = [
     convertTemperatureToHubUnit(attributes.minTemperature, deviceTemperatureUnit),
