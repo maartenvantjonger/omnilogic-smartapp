@@ -18,6 +18,10 @@ metadata {
     attribute "omnilogicId", "number"
     attribute "pumpState", "number"
     attribute "pumpSpeed", "number"
+    attribute "lastSpeed", "number"
+    attribute "valvePosition", "number"
+    attribute "whyFilterIsOn", "number"
+    attribute "fpOverride ", "number"
     attribute "isSpillover", "number"
   }
 
@@ -48,16 +52,37 @@ def refresh() {
 def parseStatus(deviceStatus, telemetryData) {
   logMethod("parseStatus", "Arguments", [deviceStatus])
 
-  def pumpState = deviceStatus?.@pumpState?.text() ?: deviceStatus?.@filterState?.text()
-  def enabled = pumpState == "1" && (!getIsSpillover() || valvePosition == 3)
-  def onOff = enabled ? "on" : "off"
-  sendEvent(name: "switch", value: onOff, displayed: true)
+    if (deviceStatus.name() == "Filter") {
+    def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
+    sendEvent(name: "valvePosition", value: valvePosition, displayed: true)
 
-  def pumpSpeed = deviceStatus?.@pumpSpeed?.text().toInteger()
-  sendEvent(name: "pumpSpeed", value: pumpSpeed, displayed: true)
+    def enabled = deviceStatus?.@filterState?.text() == "1" && (!getIsSpillover() || valvePosition == 3)
+    def onOff = enabled ? "on" : "off"
+    sendEvent(name: "switch", value: onOff, displayed: true)
 
-  def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
-  sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
+    def pumpSpeed = deviceStatus?.@filterSpeed?.text().toInteger()
+    sendEvent(name: "pumpSpeed", value: pumpSpeed, displayed: true)
+
+    def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+    sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
+
+    def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
+    sendEvent(name: "whyFilterIsOn", value: whyFilterIsOn, displayed: true)
+
+    def fpOverride = deviceStatus?.@fpOverride?.text().toInteger()
+    sendEvent(name: "fpOverride", value: fpOverride, displayed: true)
+  }
+  else {
+    def enabled = deviceStatus?.@pumpState?.text() == "1"
+    def onOff = enabled ? "on" : "off"
+    sendEvent(name: "switch", value: onOff, displayed: true)
+
+    def pumpSpeed = deviceStatus?.@pumpSpeed?.text().toInteger()
+    sendEvent(name: "pumpSpeed", value: pumpSpeed, displayed: true)
+
+    def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+    sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
+  }
 }
 
 def on() {

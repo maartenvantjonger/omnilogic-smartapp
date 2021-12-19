@@ -306,7 +306,7 @@ def addFilter(availableDevices, deviceDefinition) {
 }
 
 def addPump(availableDevices, deviceDefinition) {
-  def driverName = deviceDefinition."Type".text() == "PMP_VARIABLE_SPEED_PUMP" ? "OmniLogic VSP" : "OmniLogic Pump"
+  def driverName = deviceDefinition.Type.text() == "PMP_VARIABLE_SPEED_PUMP" ? "OmniLogic VSP" : "OmniLogic Pump"
   addDevice(availableDevices, deviceDefinition, null, driverName)
 }
 

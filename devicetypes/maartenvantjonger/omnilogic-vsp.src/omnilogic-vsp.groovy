@@ -52,49 +52,62 @@ def refresh() {
 def parseStatus(deviceStatus, telemetryData) {
   logMethod("parseStatus", "Arguments", [deviceStatus])
 
-  def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
-  sendEvent(name: "valvePosition", value: valvePosition, displayed: true)
+  if (deviceStatus.name() == "Filter") {
+    def valvePosition = deviceStatus?.@valvePosition?.text().toInteger()
+    sendEvent(name: "valvePosition", value: valvePosition, displayed: true)
 
-  def enabled = deviceStatus?.@filterState?.text() == "1" && (!getIsSpillover() || valvePosition == 3)
-  def onOff = enabled ? "on" : "off"
-  sendEvent(name: "switch", value: onOff, displayed: true)
+    def enabled = deviceStatus?.@filterState?.text() == "1" && (!getIsSpillover() || valvePosition == 3)
+    def onOff = enabled ? "on" : "off"
+    sendEvent(name: "switch", value: onOff, displayed: true)
 
-  def level = deviceStatus?.@filterSpeed?.text().toInteger()
-  sendEvent(name: "level", value: level, displayed: true)
+    def level = deviceStatus?.@filterSpeed?.text().toInteger()
+    sendEvent(name: "level", value: level, displayed: true)
 
-  def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
-  sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
+    def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+    sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
 
-  def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
-  sendEvent(name: "whyFilterIsOn", value: whyFilterIsOn, displayed: true)
+    def whyFilterIsOn = deviceStatus?.@whyFilterIsOn?.text().toInteger()
+    sendEvent(name: "whyFilterIsOn", value: whyFilterIsOn, displayed: true)
 
-  def fpOverride = deviceStatus?.@fpOverride?.text().toInteger()
-  sendEvent(name: "fpOverride", value: fpOverride, displayed: true)
+    def fpOverride = deviceStatus?.@fpOverride?.text().toInteger()
+    sendEvent(name: "fpOverride", value: fpOverride, displayed: true)
+  }
+  else {
+    def enabled = deviceStatus?.@pumpState?.text() == "1"
+    def onOff = enabled ? "on" : "off"
+    sendEvent(name: "switch", value: onOff, displayed: true)
+
+    def pumpSpeed = deviceStatus?.@pumpSpeed?.text().toInteger()
+    sendEvent(name: "level", value: pumpSpeed, displayed: true)
+
+    def lastSpeed = deviceStatus?.@lastSpeed?.text().toInteger()
+    sendEvent(name: "lastSpeed", value: lastSpeed, displayed: true)
+  }
 }
 
 def on() {
   logMethod("on")
   def lastSpeed = device.currentValue("lastSpeed")?.toInteger()
-  setPumpSpeed(lastSpeed > 0 ? lastSpeed : 100)
+  setSpeed(lastSpeed > 0 ? lastSpeed : 100)
 }
 
 def off() {
   logMethod("off")
-  setPumpSpeed(0)
+  setSpeed(0)
 }
 
 def setLevel(level) {
   logMethod("setLevel", "Arguments", [level])
-  setPumpSpeed(level)
+  setSpeed(level)
 }
 
-def setPumpSpeed(speed) {
-  logMethod("setPumpSpeed", "Arguments", [speed])
+def setSpeed(speed) {
+  logMethod("setSpeed", "Arguments", [speed])
 
   if (getIsSpillover()) {
     setSpilloverPumpSpeed(speed)
   } else {
-    setFilterPumpSpeed(speed)
+    setPumpSpeed(speed)
   }
 }
 
@@ -124,8 +137,8 @@ def setSpilloverPumpSpeed(speed) {
   }
 }
 
-def setFilterPumpSpeed(speed) {
-  logMethod("setFilterPumpSpeed", "Arguments", [speed])
+def setPumpSpeed(speed) {
+  logMethod("setPumpSpeed", "Arguments", [speed])
 
   def parameters = [
     [name: "PoolID", dataType: "int", value: device.currentValue("bowId")],
