@@ -116,47 +116,48 @@ def loginPage() {
 }
 
 def loginResultPage() {
-  def resultText = "Login failed. Please try again."
-  def nextPage = "loginPage"
-
   login(true) { success ->
-    if (success) {
-      resultText = "Login succeeded"
-      nextPage = "mainPage"
-    }
-  }
+    def resultText = success ? "Login succeeded" : "Login failed. Please try again."
+    def nextPage = success ? "mainPage" : "loginPage"
 
-  return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
-    section {
-      paragraph resultText
+    return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
+      section {
+        paragraph resultText
+      }
     }
   }
 }
 
 def devicePage() {
-  // Get currently installed child devices
-  settings.devicesToUse = childDevices*.deviceNetworkId
+  try {
+    // Get currently installed child devices
+    settings.devicesToUse = childDevices*.deviceNetworkId
 
-  // Get available devices from OmniLogic
-  getAvailableDevices()
-  def availableDeviceNames = state.availableDevices.collectEntries { [it.key, "${it.value.name} (${it.value.driverName})"] }
+    // Get available devices from OmniLogic
+    getAvailableDevices()
+    def availableDeviceNames = state.availableDevices.collectEntries { [it.key, "${it.value.name} (${it.value.driverName})"] }
 
-  return dynamicPage(name: "devicePage", nextPage: "deviceResultPage") {
     if (availableDeviceNames?.size() > 0) {
-      section {
-        input(
-          name: "devicesToUse",
-          type: "enum",
-          title: "Select devices to use",
-          required: false,
-          multiple: true,
-          options: availableDeviceNames
-        )
+      return dynamicPage(name: "devicePage", nextPage: "deviceResultPage") {
+        section {
+          input(
+            name: "devicesToUse",
+            type: "enum",
+            title: "Select devices to use",
+            required: false,
+            multiple: true,
+            options: availableDeviceNames
+          )
+        }
       }
-    } else {
-      section {
-        paragraph "No devices found"
-      }
+    }
+  } catch (e) {
+    logMethod("devicePage", "Error getting devices", [e])
+  }
+
+  return dynamicPage(name: "devicePage") {
+    section {
+      paragraph "Error getting devices"
     }
   }
 }
@@ -172,15 +173,23 @@ def deviceResultPage() {
 }
 
 def telemetryPage() {
-  updateDeviceStatuses()
-
-  def telemetryData = getPlatform() == "Hubitat"
-      ? groovy.xml.XmlUtil.escapeXml(state.telemetryData)
-      : state.telemetryData
-
   return dynamicPage(name: "telemetryPage") {
-    section {
-      paragraph telemetryData ?: "No data"
+    try {
+      updateDeviceStatuses()
+
+      def telemetryData = getPlatform() == "Hubitat"
+          ? groovy.xml.XmlUtil.escapeXml(state.telemetryData)
+          : state.telemetryData
+
+      section {
+        paragraph telemetryData ?: "No data"
+      }
+    } catch (e) {
+      logMethod("telemetryPage", "Error getting telemetry data", [e])
+
+      section {
+        paragraph "Error getting telemetry data"
+      }
     }
   }
 }
@@ -447,19 +456,24 @@ def login(force, callback) {
     [name: "Password", value: settings.password]
   ]
 
-  performApiRequest("Login", parameters) { response ->
-    def responseParameters = response?.Parameters?.Parameter
-    if (responseParameters?.find { it.@name == "Status" }.text() != "0") {
-      logMethod("login", "Failed")
-      return callback(false)
+  try {
+    performApiRequest("Login", parameters) { response ->
+      def responseParameters = response?.Parameters?.Parameter
+      if (responseParameters?.find { it.@name == "Status" }.text() != "0") {
+        logMethod("login", "Failed")
+        return callback(false)
+      }
+
+      logMethod("login", "Succeeded")
+
+      state.session.token = responseParameters.find { it.@name == "Token" }.text()
+      state.session.userId = responseParameters.find { it.@name == "UserID" }.text()
+      state.session.expiration = now() + 12 * 60 * 60 * 1000 // 12 hours
+      return callback(true)
     }
-
-    logMethod("login", "Succeeded")
-
-    state.session.token = responseParameters.find { it.@name == "Token" }.text()
-    state.session.userId = responseParameters.find { it.@name == "UserID" }.text()
-    state.session.expiration = now() + 12 * 60 * 60 * 1000 // 12 hours
-    return callback(true)
+  } catch (e) {
+    logMethod("login", "Error logging in", [e])
+    return callback(false)
   }
 }
 
