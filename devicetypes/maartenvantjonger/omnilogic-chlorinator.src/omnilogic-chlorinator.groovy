@@ -1,6 +1,7 @@
 /**
  *  OmniLogic Chlorinator
  *
+ *  Version: 1.0.0
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
