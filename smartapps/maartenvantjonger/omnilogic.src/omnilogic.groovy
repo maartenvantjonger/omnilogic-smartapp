@@ -116,15 +116,21 @@ def loginPage() {
   }
 }
 
-def loginResultPage() {
-  login(true) { success ->
-    def resultText = success ? "Login succeeded" : "Login failed. Please try again."
-    def nextPage = success ? "mainPage" : "loginPage"
 
-    return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
-      section {
-        paragraph resultText
-      }
+def loginResultPage() {
+  def resultText = "Login failed. Please try again."
+  def nextPage = "loginPage"
+
+  login(true) { success ->
+    if (success) {
+      resultText = "Login succeeded"
+      nextPage = "mainPage"
+    }
+  }
+
+  return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
+    section {
+      paragraph resultText
     }
   }
 }
