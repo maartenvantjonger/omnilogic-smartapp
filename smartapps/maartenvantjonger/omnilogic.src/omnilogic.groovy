@@ -1,8 +1,8 @@
 /**
  *  OmniLogic Smartapp
  *
- *  Version: 1.0.0
- *  Copyright 2021 Maarten van Tjonger
+ *  Version: 1.0.1
+ *  Copyright 2022 Maarten van Tjonger
  */
 definition(
   name: "OmniLogic",
@@ -31,12 +31,13 @@ def installed() {
 
 def uninstalled() {
   logMethod("uninstalled")
+  uninitialize()
   deleteDevicesExcept(null)
 }
 
 def updated() {
   logMethod("updated")
-  unsubscribe()
+  uninitialize()
   initialize()
 }
 
@@ -46,6 +47,12 @@ def initialize() {
   if (enableTelemetry) {
     runEvery15Minutes(updateDeviceStatuses)
   }
+}
+
+def uninitialize() {
+  logMethod("uninitialize")
+  unsubscribe()
+  unschedule()
 }
 
 def logMethod(method, message = null, arguments = null) {
@@ -116,22 +123,21 @@ def loginPage() {
   }
 }
 
-
 def loginResultPage() {
   def resultText = "Login failed. Please try again."
   def nextPage = "loginPage"
 
   login(true) { success ->
-    if (success) {
+      if (success) {
       resultText = "Login succeeded"
       nextPage = "mainPage"
-    }
+      }
   }
 
   return dynamicPage(name: "loginResultPage", nextPage: nextPage) {
-    section {
-      paragraph resultText
-    }
+      section {
+          paragraph resultText
+      }
   }
 }
 
