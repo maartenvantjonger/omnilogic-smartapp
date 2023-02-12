@@ -1,13 +1,15 @@
 /**
  *  OmniLogic Heater
  *
+ *  Version: 1.0.0
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition (
     name: "OmniLogic Heater",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "oic.d.thermostat"
   ) {
     capability "Sensor"
     capability "Actuator"
@@ -39,7 +41,8 @@ metadata {
 def initialize(omnilogicId, attributes) {
   logMethod("initialize", "Arguments", [omnilogicId, attributes])
 
-  def deviceTemperatureUnit = attributes.temperatureUnit == "UNITS_FAHRENHEIT" ? "F" : "C"
+  // Using .contains() because temperatureUnit can contain the unit of the secondary sensor type like UNITS_FAHRENHEITUNITS_ACTIVE_INACTIVE
+  def deviceTemperatureUnit = attributes.temperatureUnit.contains("UNITS_FAHRENHEIT") ? "F" : "C"
   def hubTemperatureUnit = getTemperatureScale()
   def setpointRange = [
     convertTemperatureToHubUnit(attributes.minTemperature, deviceTemperatureUnit),

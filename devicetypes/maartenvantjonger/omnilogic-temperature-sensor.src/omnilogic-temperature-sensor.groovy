@@ -1,13 +1,15 @@
 /**
  *  OmniLogic Temperature Sensor
  *
+ *  Version: 1.0.0
  *  Copyright 2021 Maarten van Tjonger
  */
 metadata {
   definition(
     name: "OmniLogic Temperature Sensor",
     namespace: "maartenvantjonger",
-    author: "Maarten van Tjonger"
+    author: "Maarten van Tjonger",
+    ocfDeviceType: "oic.d.thermostat"
   ) {
     capability "Sensor"
     capability "Refresh"
