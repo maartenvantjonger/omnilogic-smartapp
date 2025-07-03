@@ -43,10 +43,10 @@ If haven't tested this with Amazon Echo devices since I don't own any, but I'm c
 
 The integration consists of a Smartapp to handle communication with the Hayward OmniLogic API and 8 device handlers to control individual devices.
 
-Hubitat installation bundle: https://github.com/maartenvantjonger/omnilogic-smartapp/releases/download/1.0/omnilogic-v1.0.zip
+Hubitat installation bundle: https://github.com/maartenvantjonger/omnilogic-smartapp/releases/download/1.2/omnilogic-v1.2.zip
 Source code: https://github.com/maartenvantjonger/omnilogic-smartapp
 
-In Hubitat, go to *Bundles -> Import ZIP*, and import **omnilogic-v1.0.zip**
+In Hubitat, go to *Bundles -> Import ZIP*, and import **omnilogic-v1.2.zip**
 
 In Smartthings:
 - Log in to https://consigliere-regional.api.smartthings.com
